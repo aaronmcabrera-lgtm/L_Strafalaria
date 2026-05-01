@@ -1,50 +1,23 @@
-import Simulador from "../components/Simulador";"use client";
+"use client"; // Siempre debe ser la primera línea
 
 import { useState } from "react";
 
+// Definimos el componente directamente
 export default function Simulador() {
-  const [numero, setNumero] = useState("23");
-
-  const imagenPath = `/disenos/${numero}.png`;
+  // Aquí puedes agregar tu lógica de estado
+  const [valor, setValor] = useState(0);
 
   return (
-    <div className="flex flex-col items-center gap-6">
-
-      <h2 className="text-xl font-semibold">
-        Escribe tu número
-      </h2>
-
-      {/* INPUT */}
-      <input
-        value={numero}
-        onChange={(e) => setNumero(e.target.value)}
-        placeholder="Ej: 44"
-        className="px-4 py-2 bg-black text-white border border-white/20 rounded text-center"
-      />
-
-      {/* IMAGEN */}
-      <div className="bg-black p-4 rounded-xl border border-white/10">
-        <img
-          src={imagenPath}
-          alt="diseño"
-          className="w-[300px] h-auto object-contain"
-          onError={(e) => {
-            e.currentTarget.src = "/placeholder.png";
-          }}
-        />
-      </div>
-
-      {/* BOTÓN WHATSAPP */}
-      <a
-        href={`https://wa.me/5215510141024?text=${encodeURIComponent(
-          `Hola, quiero este dije con el número ${numero}`
-        )}`}
-        target="_blank"
-        className="bg-green-500 px-6 py-3 rounded font-semibold hover:bg-green-600 transition"
+    <div className="p-4 border rounded-lg shadow-sm">
+      <h2 className="text-xl font-bold">Simulador</h2>
+      <p>Contenido del simulador aquí.</p>
+      {/* Ejemplo de uso de estado */}
+      <button 
+        onClick={() => setValor(valor + 1)}
+        className="mt-2 px-4 py-2 bg-blue-500 text-white rounded"
       >
-        Cotizar este diseño
-      </a>
-
+        Contador: {valor}
+      </button>
     </div>
   );
 }
