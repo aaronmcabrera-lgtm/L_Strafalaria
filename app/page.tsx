@@ -38,7 +38,6 @@ export default function Home() {
       ? "Hola! Me interesa personalizar un dije. ¿Me podrían dar más información?"
       : `Hola! Me interesa una cotización para un dije de ${metal} con el número ${numero}. Vi el diseño en su simulador.`;
     
-    // Reemplaza X con tu número de contacto real
     const url = `https://wa.me/521XXXXXXXXXX?text=${encodeURIComponent(mensaje)}`; 
     window.open(url, '_blank');
   };
@@ -46,7 +45,7 @@ export default function Home() {
   const inputStyle = {
     padding: '12px',
     borderRadius: '8px',
-    width: '100%', // Ajustado para mejor centrado
+    width: '100%',
     maxWidth: '350px',
     border: 'none',
     textAlign: 'center' as const,
@@ -59,7 +58,7 @@ export default function Home() {
 
   const selectStyle = {
     ...inputStyle,
-    color: 'black', // Color igual al del texto del botón (Simular Diseño)
+    color: 'black',
     appearance: 'none' as const,
     cursor: 'pointer',
     backgroundColor: 'white'
@@ -89,18 +88,31 @@ export default function Home() {
 
       <div style={{
         backgroundColor: 'rgba(0,0,0,0.85)',
-        padding: '30px',
+        padding: '40px 30px',
         borderRadius: '20px',
         textAlign: 'center',
-        maxWidth: '450px',
+        maxWidth: '500px', // Ligeramente más ancho para el título grande
         width: '100%',
         boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
         display: 'flex',
         flexDirection: 'column',
-        alignItems: 'center' // Asegura el centrado interno
+        alignItems: 'center'
       }}>
-        <h1 style={{ color: '#d4af37', marginBottom: '10px', fontWeight: 900 }}>Strafalaria Simulator</h1>
-        <p style={{ marginBottom: '20px', fontSize: '14px' }}>Visualiza tu pieza en Oro o Plata</p>
+        {/* Título actualizado: 50% más grande y Bold extremo */}
+        <h1 style={{ 
+          color: '#d4af37', 
+          marginBottom: '15px', 
+          fontWeight: 900, 
+          fontSize: '3rem', // Aumentado un 50% respecto al anterior
+          lineHeight: '1.1',
+          textTransform: 'uppercase'
+        }}>
+          Simulador Strafalaria
+        </h1>
+        
+        <p style={{ marginBottom: '25px', fontSize: '16px', letterSpacing: '1px' }}>
+          Visualiza tu pieza en Oro o Plata
+        </p>
         
         <form onSubmit={simularDiseño} style={{ marginBottom: '25px', width: '100%' }}>
           <div style={{ marginBottom: '15px' }}>
@@ -127,7 +139,7 @@ export default function Home() {
           <button 
             type="submit"
             style={{
-              padding: '12px 30px',
+              padding: '14px 30px',
               backgroundColor: '#d4af37',
               color: 'black',
               border: 'none',
@@ -137,7 +149,7 @@ export default function Home() {
               width: '100%',
               maxWidth: '350px',
               fontFamily: "'Lato', sans-serif",
-              fontSize: '16px'
+              fontSize: '18px'
             }}
           >
             SIMULAR DISEÑO
@@ -146,7 +158,6 @@ export default function Home() {
 
         {error && <p style={{ color: '#ff4444', marginBottom: '10px' }}>Ingresa un número entre 0 y 99</p>}
 
-        {/* Contenedor de simulación centrado */}
         <div style={{ 
           marginTop: '20px', 
           width: '100%', 
@@ -161,14 +172,14 @@ export default function Home() {
             src={imagenResultado} 
             alt="Visualización" 
             style={{ 
-              maxWidth: '220px', 
+              maxWidth: '240px', 
               width: '100%',
               borderRadius: '15px', 
               border: '2px solid #d4af37', 
               marginBottom: '20px',
               backgroundColor: '#111',
               display: 'block',
-              margin: '0 auto' // Forzar centrado de imagen
+              margin: '0 auto'
             }}
             onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/300?text=Cargando+Diseño...'; }}
           />
@@ -184,8 +195,7 @@ export default function Home() {
                 border: 'none', 
                 borderRadius: '5px', 
                 cursor: mostrandoEjemplo ? 'default' : 'pointer',
-                fontFamily: "'Lato', sans-serif",
-                fontSize: '14px'
+                fontFamily: "'Lato', sans-serif"
               }}
             >
               Descargar PNG
@@ -201,8 +211,7 @@ export default function Home() {
                 borderRadius: '5px', 
                 cursor: 'pointer', 
                 fontWeight: 'bold', 
-                fontFamily: "'Lato', sans-serif",
-                fontSize: '14px'
+                fontFamily: "'Lato', sans-serif"
               }}
             >
               Cotizar WhatsApp
