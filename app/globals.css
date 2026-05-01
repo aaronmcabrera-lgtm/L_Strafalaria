@@ -1,0 +1,11 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Playfair+Display:wght@700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+h1 {
+  font-family: 'Montserrat', serif !important;
+}
+
+button, input, select, p, a {
+  font-family: 'Montserrat', sans-serif !important;
+}
