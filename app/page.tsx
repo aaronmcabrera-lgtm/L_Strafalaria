@@ -1,224 +1,82 @@
-"use client";
+"use client"; // Necesario para que el simulador sea interactivo
+import React, { useState } from 'react';
+import { MessageCircle, Award, Hammer, Sparkles } from 'lucide-react';
 
-import { useState } from 'react';
+export default function LandingStrafalaria() {
+  // Lógica del simulador
+  const [numero, setNumero] = useState("23");
+  const [material, setMaterial] = useState("Oro 14k");
 
-export default function Home() {
-  const [numero, setNumero] = useState("");
-  const [metal, setMetal] = useState("oro");
-  const [imagenResultado, setImagenResultado] = useState("/favicon.ico");
-  const [error, setError] = useState(false);
-  const [mostrandoEjemplo, setMostrandoEjemplo] = useState(true);
-
-  const simularDiseño = (e: React.FormEvent) => {
-    e.preventDefault();
-    const numInt = parseInt(numero);
-    
-    if (isNaN(numInt) || numInt < 0 || numInt > 99) {
-      setError(true);
-      return;
-    }
-
-    setError(false);
-    setMostrandoEjemplo(false);
-    setImagenResultado(`/${metal}-${numero}.png`);
-  };
-
-  const handleDownload = () => {
-    if (!imagenResultado || mostrandoEjemplo) return;
-    const link = document.createElement('a');
-    link.href = imagenResultado;
-    link.download = `dije-${metal}-${numero}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  const enviarWhatsApp = () => {
-    const mensaje = mostrandoEjemplo 
-      ? "Hola! Me interesa personalizar un dije. ¿Me podrían dar más información?"
-      : `Hola! Me interesa una cotización para un dije de ${metal} con el número ${numero}. Vi el diseño en su simulador.`;
-    
-    const url = `https://wa.me/5215510141024?text=${encodeURIComponent(mensaje)}`; 
-    window.open(url, '_blank');
-  };
-
-  const inputStyle = {
-    padding: '12px',
-    borderRadius: '8px',
-    width: '100%',
-    maxWidth: '350px',
-    border: 'none',
-    textAlign: 'center' as const,
-    fontFamily: "'Lato', sans-serif",
-    color: '#333333',
-    fontSize: '16px',
-    fontWeight: 'bold',
-    margin: '0 auto'
-  };
-
-  const selectStyle = {
-    ...inputStyle,
-    color: 'black',
-    appearance: 'none' as const,
-    cursor: 'pointer',
-    backgroundColor: 'white'
-  };
+  // Colores dinámicos basados en el material
+  const colorDije = material === "Oro 14k" ? "text-yellow-500" : "text-gray-300";
+  const sombraDije = material === "Oro 14k" 
+    ? "drop-shadow-[0_0_15px_rgba(234,179,8,0.5)]" 
+    : "drop-shadow-[0_0_15px_rgba(209,213,219,0.5)]";
 
   return (
-    <main style={{
-      backgroundImage: "url('/fondo.jpg')",
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      minHeight: '100vh',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '20px',
-      color: 'white',
-      fontFamily: "'Lato', sans-serif"
-    }}>
-      <style jsx global>{`
-        @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
-        select option {
-          color: black;
-          font-weight: bold;
-        }
-      `}</style>
+    <div className="min-h-screen bg-black text-white font-sans">
+      
+      {/* 1. HERO SECTION + SIMULADOR INTERACTIVO */}
+      <section className="relative min-h-screen flex flex-col items-center justify-center px-4 pt-20">
+        <div className="relative z-10 text-center mb-10">
+          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tighter mb-4 bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent italic">
+            STRAFALARIA
+          </h1>
+          <p className="text-xl md:text-2xl text-gray-300 font-light">Joyería de alto impacto para campeones.</p>
+        </div>
 
-      <div style={{
-        backgroundColor: 'rgba(0,0,0,0.85)',
-        padding: '40px 30px',
-        borderRadius: '20px',
-        textAlign: 'center',
-        maxWidth: '500px', // Ligeramente más ancho para el título grande
-        width: '100%',
-        boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center'
-      }}>
-        {/* Título actualizado: 30% más grande y Bold extremo */}
-        <h1 style={{ 
-          color: '#d4af37', 
-          marginBottom: '15px', 
-          fontWeight: 900, 
-          fontSize: '3rem', // Aumentado un 30% respecto al anterior
-          lineHeight: '1.1',
-          textTransform: 'uppercase'
-        }}>
-          Simulador Strafalaria
-        </h1>
-        
-        <p style={{ marginBottom: '25px', fontSize: '26px', letterSpacing: '1px' }}>
-          Visualiza tu pieza en Oro o Plata
-        </p>
-        
-        <form onSubmit={simularDiseño} style={{ marginBottom: '25px', width: '100%' }}>
-          <div style={{ marginBottom: '15px' }}>
-            <input 
-              type="number" 
-              value={numero}
-              onChange={(e) => setNumero(e.target.value)}
-              placeholder="Ingresa tu número (0-99)"
-              style={inputStyle}
-            />
-          </div>
-
-          <div style={{ marginBottom: '20px', width: '100%' }}>
-            <select 
-              value={metal} 
-              onChange={(e) => setMetal(e.target.value)}
-              style={selectStyle}
-            >
-              <option value="oro">Oro 14k</option>
-              <option value="plata">Plata .925</option>
-            </select>
-          </div>
-
-          <button 
-            type="submit"
-            style={{
-              padding: '14px 30px',
-              backgroundColor: '#d4af37',
-              color: 'black',
-              border: 'none',
-              borderRadius: '8px',
-              fontWeight: 'bold',
-              cursor: 'pointer',
-              width: '100%',
-              maxWidth: '350px',
-              fontFamily: "'Lato', sans-serif",
-              fontSize: '18px'
-            }}
-          >
-            SIMULAR DISEÑO
-          </button>
-        </form>
-
-        {error && <p style={{ color: '#ff4444', marginBottom: '10px' }}>Ingresa un número entre 0 y 99</p>}
-
-        <div style={{ 
-          marginTop: '20px', 
-          width: '100%', 
-          display: 'flex', 
-          flexDirection: 'column', 
-          alignItems: 'center' 
-        }}>
-          <p style={{ marginBottom: '10px', fontSize: '12px', color: '#aaa', letterSpacing: '1px' }}>
-            {mostrandoEjemplo ? "MUESTRA DE EJEMPLO" : "TU DISEÑO PERSONALIZADO"}
-          </p>
-          <img 
-            src={imagenResultado} 
-            alt="Visualización" 
-            style={{ 
-              maxWidth: '240px', 
-              width: '100%',
-              borderRadius: '15px', 
-              border: '2px solid #d4af37', 
-              marginBottom: '25px',
-              backgroundColor: '#111',
-              display: 'block',
-              margin: '0 auto'
-            }}
-            onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/300?text=Cargando+Diseño...'; }}
-          />
+        {/* CONTENEDOR DEL SIMULADOR */}
+        <div className="relative z-10 w-full max-w-md bg-zinc-900/90 backdrop-blur-xl p-8 rounded-3xl border border-white/10 shadow-2xl">
+          <h2 className="text-2xl font-bold mb-6 text-center">Diseña tu dije</h2>
           
-          <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', width: '100%' }}>
-            <button 
-              onClick={handleDownload}
-              disabled={mostrandoEjemplo}
-              style={{ 
-                padding: '10px 15px', 
-                backgroundColor: mostrandoEjemplo ? '#222' : '#444', 
-                color: mostrandoEjemplo ? '#666' : 'white', 
-                border: 'none', 
-                borderRadius: '5px', 
-                cursor: mostrandoEjemplo ? 'default' : 'pointer',
-                fontFamily: "'Lato', sans-serif"
-              }}
+          {/* VISTA PREVIA DINÁMICA */}
+          <div className="aspect-square bg-black rounded-2xl mb-6 flex flex-col items-center justify-center border border-zinc-800 relative overflow-hidden">
+             <div className={`text-9xl font-bold transition-all duration-500 ${colorDije} ${sombraDije}`}>
+                {numero || "00"}
+             </div>
+             <span className="absolute bottom-4 text-xs tracking-widest uppercase opacity-50">{material}</span>
+          </div>
+          
+          <div className="space-y-4">
+            {/* INPUTS DEL SIMULADOR */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex flex-col gap-2">
+                <label className="text-xs uppercase text-gray-500 font-bold">Número</label>
+                <input 
+                  type="text" 
+                  maxLength={2}
+                  value={numero}
+                  onChange={(e) => setNumero(e.target.value)}
+                  className="bg-black border border-zinc-700 rounded-lg p-3 text-center text-xl focus:border-yellow-500 outline-none transition"
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <label className="text-xs uppercase text-gray-500 font-bold">Material</label>
+                <select 
+                  value={material}
+                  onChange={(e) => setMaterial(e.target.value)}
+                  className="bg-black border border-zinc-700 rounded-lg p-3 text-sm focus:border-yellow-500 outline-none transition appearance-none"
+                >
+                  <option value="Oro 14k">Oro 14k</option>
+                  <option value="Plata">Plata .925</option>
+                </select>
+              </div>
+            </div>
+
+            <a 
+              href={`https://wa.me/tu_numero?text=Hola! Quiero cotizar mi dije personalizado numero ${numero} en ${material}`}
+              target="_blank"
+              className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition mt-4"
             >
-              Descargar PNG
-            </button>
-            
-            <button 
-              onClick={enviarWhatsApp}
-              style={{ 
-                padding: '10px 15px', 
-                backgroundColor: '#25D366', 
-                color: 'white', 
-                border: 'none', 
-                borderRadius: '5px', 
-                cursor: 'pointer', 
-                fontWeight: 'bold', 
-                fontFamily: "'Lato', sans-serif"
-              }}
-            >
-              Cotizar WhatsApp
-            </button>
+              <MessageCircle size={20} /> Cotizar por WhatsApp
+            </a>
           </div>
         </div>
-      </div>
-    </main>
+      </section>
+
+      {/* SECCIONES DE VALORES Y PORTAFOLIO (Igual al anterior) */}
+      {/* ... */}
+
+    </div>
   );
 }
