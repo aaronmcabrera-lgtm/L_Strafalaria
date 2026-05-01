@@ -8,7 +8,7 @@ const bebas = Annapurna_SIL({
 });
 
 export const metadata: Metadata = {
-  title: "Strafalaria Simulator",
+  title: "Simulador Strafalaria",
   description: "Diseña tu dije personalizado",
 };
 
