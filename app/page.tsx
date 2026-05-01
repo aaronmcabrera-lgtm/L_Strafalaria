@@ -47,7 +47,7 @@ function Pendant({ text, metal }: { text: string; metal: string }) {
 }
 
 export default function Home() {
-  const [text, setText] = useState("23");
+  const [text, setText] = useState("24");
   const [metal, setMetal] = useState("gold");
   const stageRef = useRef<any>(null);
 
