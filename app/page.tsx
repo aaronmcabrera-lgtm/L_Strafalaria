@@ -38,7 +38,7 @@ export default function Home() {
       ? "Hola! Me interesa personalizar un dije. ¿Me podrían dar más información?"
       : `Hola! Me interesa una cotización para un dije de ${metal} con el número ${numero}. Vi el diseño en su simulador.`;
     
-    const url = `https://wa.me/521XXXXXXXXXX?text=${encodeURIComponent(mensaje)}`; 
+    const url = `https://wa.me/5215510141024?text=${encodeURIComponent(mensaje)}`; 
     window.open(url, '_blank');
   };
 
@@ -98,19 +98,19 @@ export default function Home() {
         flexDirection: 'column',
         alignItems: 'center'
       }}>
-        {/* Título actualizado: 50% más grande y Bold extremo */}
+        {/* Título actualizado: 30% más grande y Bold extremo */}
         <h1 style={{ 
           color: '#d4af37', 
           marginBottom: '15px', 
           fontWeight: 900, 
-          fontSize: '3rem', // Aumentado un 50% respecto al anterior
+          fontSize: '3rem', // Aumentado un 30% respecto al anterior
           lineHeight: '1.1',
           textTransform: 'uppercase'
         }}>
           Simulador Strafalaria
         </h1>
         
-        <p style={{ marginBottom: '25px', fontSize: '16px', letterSpacing: '1px' }}>
+        <p style={{ marginBottom: '25px', fontSize: '26px', letterSpacing: '1px' }}>
           Visualiza tu pieza en Oro o Plata
         </p>
         
@@ -176,7 +176,7 @@ export default function Home() {
               width: '100%',
               borderRadius: '15px', 
               border: '2px solid #d4af37', 
-              marginBottom: '20px',
+              marginBottom: '25px',
               backgroundColor: '#111',
               display: 'block',
               margin: '0 auto'
