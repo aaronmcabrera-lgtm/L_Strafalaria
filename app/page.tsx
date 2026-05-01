@@ -39,21 +39,30 @@ export default function Home() {
       : `Hola! Me interesa una cotización para un dije de ${metal} con el número ${numero}. Vi el diseño en su simulador.`;
     
     // Reemplaza X con tu número de contacto real
-    const url = `https://wa.me/5215510141024?text=${encodeURIComponent(mensaje)}`; 
+    const url = `https://wa.me/521XXXXXXXXXX?text=${encodeURIComponent(mensaje)}`; 
     window.open(url, '_blank');
   };
 
-  // Estilo común para los inputs solicitado
   const inputStyle = {
     padding: '12px',
     borderRadius: '8px',
-    width: '90%',
+    width: '100%', // Ajustado para mejor centrado
+    maxWidth: '350px',
     border: 'none',
     textAlign: 'center' as const,
     fontFamily: "'Lato', sans-serif",
     color: '#333333',
     fontSize: '16px',
-    fontWeight: 'bold'
+    fontWeight: 'bold',
+    margin: '0 auto'
+  };
+
+  const selectStyle = {
+    ...inputStyle,
+    color: 'black', // Color igual al del texto del botón (Simular Diseño)
+    appearance: 'none' as const,
+    cursor: 'pointer',
+    backgroundColor: 'white'
   };
 
   return (
@@ -70,9 +79,12 @@ export default function Home() {
       color: 'white',
       fontFamily: "'Lato', sans-serif"
     }}>
-      {/* Importación de la fuente Lato desde Google Fonts */}
       <style jsx global>{`
-        @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+        select option {
+          color: black;
+          font-weight: bold;
+        }
       `}</style>
 
       <div style={{
@@ -82,12 +94,15 @@ export default function Home() {
         textAlign: 'center',
         maxWidth: '450px',
         width: '100%',
-        boxShadow: '0 10px 30px rgba(0,0,0,0.5)'
+        boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center' // Asegura el centrado interno
       }}>
-        <h1 style={{ color: '#d4af37', marginBottom: '10px' }}>Strafalaria Simulator</h1>
+        <h1 style={{ color: '#d4af37', marginBottom: '10px', fontWeight: 900 }}>Strafalaria Simulator</h1>
         <p style={{ marginBottom: '20px', fontSize: '14px' }}>Visualiza tu pieza en Oro o Plata</p>
         
-        <form onSubmit={simularDiseño} style={{ marginBottom: '25px' }}>
+        <form onSubmit={simularDiseño} style={{ marginBottom: '25px', width: '100%' }}>
           <div style={{ marginBottom: '15px' }}>
             <input 
               type="number" 
@@ -98,11 +113,11 @@ export default function Home() {
             />
           </div>
 
-          <div style={{ marginBottom: '20px' }}>
+          <div style={{ marginBottom: '20px', width: '100%' }}>
             <select 
               value={metal} 
               onChange={(e) => setMetal(e.target.value)}
-              style={{ ...inputStyle, width: '96%', cursor: 'pointer' }}
+              style={selectStyle}
             >
               <option value="oro">Oro 14k</option>
               <option value="plata">Plata .925</option>
@@ -120,7 +135,9 @@ export default function Home() {
               fontWeight: 'bold',
               cursor: 'pointer',
               width: '100%',
-              fontFamily: "'Lato', sans-serif"
+              maxWidth: '350px',
+              fontFamily: "'Lato', sans-serif",
+              fontSize: '16px'
             }}
           >
             SIMULAR DISEÑO
@@ -129,24 +146,34 @@ export default function Home() {
 
         {error && <p style={{ color: '#ff4444', marginBottom: '10px' }}>Ingresa un número entre 0 y 99</p>}
 
-        <div style={{ marginTop: '20px' }}>
-          <p style={{ marginBottom: '10px', fontSize: '12px', color: '#aaa' }}>
+        {/* Contenedor de simulación centrado */}
+        <div style={{ 
+          marginTop: '20px', 
+          width: '100%', 
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'center' 
+        }}>
+          <p style={{ marginBottom: '10px', fontSize: '12px', color: '#aaa', letterSpacing: '1px' }}>
             {mostrandoEjemplo ? "MUESTRA DE EJEMPLO" : "TU DISEÑO PERSONALIZADO"}
           </p>
           <img 
             src={imagenResultado} 
             alt="Visualización" 
             style={{ 
-              maxWidth: '200px', 
+              maxWidth: '220px', 
+              width: '100%',
               borderRadius: '15px', 
               border: '2px solid #d4af37', 
               marginBottom: '20px',
-              backgroundColor: '#111'
+              backgroundColor: '#111',
+              display: 'block',
+              margin: '0 auto' // Forzar centrado de imagen
             }}
             onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/300?text=Cargando+Diseño...'; }}
           />
           
-          <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+          <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', width: '100%' }}>
             <button 
               onClick={handleDownload}
               disabled={mostrandoEjemplo}
@@ -157,7 +184,8 @@ export default function Home() {
                 border: 'none', 
                 borderRadius: '5px', 
                 cursor: mostrandoEjemplo ? 'default' : 'pointer',
-                fontFamily: "'Lato', sans-serif"
+                fontFamily: "'Lato', sans-serif",
+                fontSize: '14px'
               }}
             >
               Descargar PNG
@@ -165,7 +193,17 @@ export default function Home() {
             
             <button 
               onClick={enviarWhatsApp}
-              style={{ padding: '10px 15px', backgroundColor: '#25D366', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold', fontFamily: "'Lato', sans-serif" }}
+              style={{ 
+                padding: '10px 15px', 
+                backgroundColor: '#25D366', 
+                color: 'white', 
+                border: 'none', 
+                borderRadius: '5px', 
+                cursor: 'pointer', 
+                fontWeight: 'bold', 
+                fontFamily: "'Lato', sans-serif",
+                fontSize: '14px'
+              }}
             >
               Cotizar WhatsApp
             </button>
