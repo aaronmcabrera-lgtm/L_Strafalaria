@@ -5,8 +5,10 @@ import { useState } from 'react';
 export default function Home() {
   const [numero, setNumero] = useState("");
   const [metal, setMetal] = useState("oro");
-  const [imagenResultado, setImagenResultado] = useState("");
+  // Inicializamos con el favicon como muestra inicial de ejemplo
+  const [imagenResultado, setImagenResultado] = useState("/favicon.ico");
   const [error, setError] = useState(false);
+  const [mostrandoEjemplo, setMostrandoEjemplo] = useState(true);
 
   const simularDiseño = (e: React.FormEvent) => {
     e.preventDefault();
@@ -14,17 +16,17 @@ export default function Home() {
     
     if (isNaN(numInt) || numInt < 0 || numInt > 99) {
       setError(true);
-      setImagenResultado("");
       return;
     }
 
     setError(false);
+    setMostrandoEjemplo(false);
     // Ruta dinámica basada en tus archivos en la carpeta public
     setImagenResultado(`/${metal}-${numero}.png`);
   };
 
   const handleDownload = () => {
-    if (!imagenResultado) return;
+    if (!imagenResultado || mostrandoEjemplo) return;
     const link = document.createElement('a');
     link.href = imagenResultado;
     link.download = `dije-${metal}-${numero}.png`;
@@ -34,8 +36,12 @@ export default function Home() {
   };
 
   const enviarWhatsApp = () => {
-    const mensaje = `Hola! Me interesa una cotización para un dije de ${metal} con el número ${numero}. Vi el diseño en su simulador.`;
-    const url = `https://wa.me/5215510141024?text=${encodeURIComponent(mensaje)}`; // Reemplaza X con tu número
+    const mensaje = mostrandoEjemplo 
+      ? "Hola! Me interesa personalizar un dije. ¿Me podrían dar más información?"
+      : `Hola! Me interesa una cotización para un dije de ${metal} con el número ${numero}. Vi el diseño en su simulador.`;
+    
+    // Reemplaza X con tu número de contacto real
+    const url = `https://wa.me/5215510141024?text=${encodeURIComponent(mensaje)}`; 
     window.open(url, '_blank');
   };
 
@@ -104,34 +110,49 @@ export default function Home() {
           </button>
         </form>
 
-        {error && <p style={{ color: '#ff4444' }}>Por favor ingresa un número entre 0 y 99</p>}
+        {error && <p style={{ color: '#ff4444', marginBottom: '10px' }}>Ingresa un número entre 0 y 99</p>}
 
-        {imagenResultado && (
-          <div style={{ marginTop: '20px', animation: 'fadeIn 0.5s' }}>
-            <img 
-              src={imagenResultado} 
-              alt="Tu dije" 
-              style={{ maxWidth: '100%', borderRadius: '15px', border: '2px solid #d4af37', marginBottom: '20px' }}
-              onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/300?text=Diseño+No+Disponible'; }}
-            />
+        <div style={{ marginTop: '20px' }}>
+          <p style={{ marginBottom: '10px', fontSize: '12px', color: '#aaa' }}>
+            {mostrandoEjemplo ? "MUESTRA DE EJEMPLO" : "TU DISEÑO PERSONALIZADO"}
+          </p>
+          <img 
+            src={imagenResultado} 
+            alt="Visualización" 
+            style={{ 
+              maxWidth: '200px', 
+              borderRadius: '15px', 
+              border: '2px solid #d4af37', 
+              marginBottom: '20px',
+              backgroundColor: '#111'
+            }}
+            onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/300?text=Cargando+Diseño...'; }}
+          />
+          
+          <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+            <button 
+              onClick={handleDownload}
+              disabled={mostrandoEjemplo}
+              style={{ 
+                padding: '10px 15px', 
+                backgroundColor: mostrandoEjemplo ? '#222' : '#444', 
+                color: mostrandoEjemplo ? '#666' : 'white', 
+                border: 'none', 
+                borderRadius: '5px', 
+                cursor: mostrandoEjemplo ? 'default' : 'pointer' 
+              }}
+            >
+              Descargar PNG
+            </button>
             
-            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-              <button 
-                onClick={handleDownload}
-                style={{ padding: '10px 15px', backgroundColor: '#444', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}
-              >
-                Descargar PNG
-              </button>
-              
-              <button 
-                onClick={enviarWhatsApp}
-                style={{ padding: '10px 15px', backgroundColor: '#25D366', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}
-              >
-                Cotizar WhatsApp
-              </button>
-            </div>
+            <button 
+              onClick={enviarWhatsApp}
+              style={{ padding: '10px 15px', backgroundColor: '#25D366', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}
+            >
+              Cotizar WhatsApp
+            </button>
           </div>
-        )}
+        </div>
       </div>
     </main>
   );
