@@ -5,7 +5,6 @@ import { useState } from 'react';
 export default function Home() {
   const [numero, setNumero] = useState("");
   const [metal, setMetal] = useState("oro");
-  // Inicializamos con el favicon como muestra inicial de ejemplo
   const [imagenResultado, setImagenResultado] = useState("/favicon.ico");
   const [error, setError] = useState(false);
   const [mostrandoEjemplo, setMostrandoEjemplo] = useState(true);
@@ -21,7 +20,6 @@ export default function Home() {
 
     setError(false);
     setMostrandoEjemplo(false);
-    // Ruta dinámica basada en tus archivos en la carpeta public
     setImagenResultado(`/${metal}-${numero}.png`);
   };
 
@@ -45,6 +43,19 @@ export default function Home() {
     window.open(url, '_blank');
   };
 
+  // Estilo común para los inputs solicitado
+  const inputStyle = {
+    padding: '12px',
+    borderRadius: '8px',
+    width: '90%',
+    border: 'none',
+    textAlign: 'center' as const,
+    fontFamily: "'Lato', sans-serif",
+    color: '#333333',
+    fontSize: '16px',
+    fontWeight: 'bold'
+  };
+
   return (
     <main style={{
       backgroundImage: "url('/fondo.jpg')",
@@ -57,8 +68,13 @@ export default function Home() {
       justifyContent: 'center',
       padding: '20px',
       color: 'white',
-      fontFamily: 'sans-serif'
+      fontFamily: "'Lato', sans-serif"
     }}>
+      {/* Importación de la fuente Lato desde Google Fonts */}
+      <style jsx global>{`
+        @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap');
+      `}</style>
+
       <div style={{
         backgroundColor: 'rgba(0,0,0,0.85)',
         padding: '30px',
@@ -78,7 +94,7 @@ export default function Home() {
               value={numero}
               onChange={(e) => setNumero(e.target.value)}
               placeholder="Ingresa tu número (0-99)"
-              style={{ padding: '12px', borderRadius: '8px', width: '90%', border: 'none', textAlign: 'center' }}
+              style={inputStyle}
             />
           </div>
 
@@ -86,7 +102,7 @@ export default function Home() {
             <select 
               value={metal} 
               onChange={(e) => setMetal(e.target.value)}
-              style={{ padding: '12px', borderRadius: '8px', width: '96%', cursor: 'pointer' }}
+              style={{ ...inputStyle, width: '96%', cursor: 'pointer' }}
             >
               <option value="oro">Oro 14k</option>
               <option value="plata">Plata .925</option>
@@ -103,7 +119,8 @@ export default function Home() {
               borderRadius: '8px',
               fontWeight: 'bold',
               cursor: 'pointer',
-              width: '100%'
+              width: '100%',
+              fontFamily: "'Lato', sans-serif"
             }}
           >
             SIMULAR DISEÑO
@@ -139,7 +156,8 @@ export default function Home() {
                 color: mostrandoEjemplo ? '#666' : 'white', 
                 border: 'none', 
                 borderRadius: '5px', 
-                cursor: mostrandoEjemplo ? 'default' : 'pointer' 
+                cursor: mostrandoEjemplo ? 'default' : 'pointer',
+                fontFamily: "'Lato', sans-serif"
               }}
             >
               Descargar PNG
@@ -147,7 +165,7 @@ export default function Home() {
             
             <button 
               onClick={enviarWhatsApp}
-              style={{ padding: '10px 15px', backgroundColor: '#25D366', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}
+              style={{ padding: '10px 15px', backgroundColor: '#25D366', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold', fontFamily: "'Lato', sans-serif" }}
             >
               Cotizar WhatsApp
             </button>
