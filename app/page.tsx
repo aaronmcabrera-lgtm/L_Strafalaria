@@ -45,7 +45,7 @@ export default function Home() {
   return (
     <main className="bg-black text-white font-inter selection:bg-[#00E676] selection:text-black">
       
-      {/* SECCIÓN HERO - DISEÑO RESPONSIVO DE 3 LÍNEAS */}
+      {/* SECCIÓN HERO */}
       <section 
         className="relative pt-16 pb-10 md:py-28 text-center px-6 bg-cover bg-center bg-no-repeat min-h-[90vh] flex flex-col justify-center items-center"
         style={{ backgroundImage: "url('/disenos/fondo-hero.jpg')" }}
@@ -68,7 +68,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* SECCIÓN GALERÍA - BOTONES CON MEJOR PROPORCIÓN */}
+      {/* SECCIÓN GALERÍA */}
       <section className="bg-black py-12 md:py-24 px-6 border-t border-white/5">
         <div className="max-w-7xl mx-auto text-center">
           <h2 className="font-antonio text-4xl md:text-6xl font-bold mb-4 uppercase tracking-tighter italic text-white">
@@ -102,10 +102,13 @@ export default function Home() {
                     ))}
                   </div>
                   <div className="mt-auto">
-                    {/* Ajuste final: text-[10px] y tracking-widest para mayor balance y elegancia */}
-                    <button className="w-full py-3.5 bg-gradient-to-r from-[#00E5FF] to-[#00E676] text-black font-black uppercase text-[10px] tracking-widest rounded-sm hover:brightness-110 transition-all italic">
+                    <a 
+                      href={`https://wa.me/5215510141024?text=${encodeURIComponent(`Hola Strafalaria, me interesa cotizar el modelo: ${prod.nombre}`)}`}
+                      target="_blank"
+                      className="block w-full py-3.5 bg-gradient-to-r from-[#00E5FF] to-[#00E676] text-black font-black uppercase text-[10px] tracking-widest rounded-sm hover:brightness-110 transition-all italic text-center"
+                    >
                       COTIZA EL TUYO
-                    </button>
+                    </a>
                   </div>
                 </div>
               </div>
@@ -114,7 +117,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* FOOTER - ESPACIADO OPTIMIZADO */}
+      {/* FOOTER */}
       <footer className="bg-black py-12 md:py-24 px-6 border-t border-white/10 text-center">
         <h2 className="font-antonio text-3xl md:text-5xl font-bold mb-8 uppercase tracking-tighter text-white leading-none">
           DISEÑA Y DESCARGA EL TUYO AHORA
@@ -149,11 +152,11 @@ export default function Home() {
 
           <div className="flex flex-col items-center md:items-end gap-4">
             <p className="font-inter text-[9px] text-gray-500 uppercase tracking-widest text-center md:text-right leading-relaxed">
-              Subscríbete a nuestro newsletter, recibirás antes que nadie <br/> información acerca de nuestros nuevos productos, promociones y descuentos.
+              Subscríbete a nuestro newsletter para recibir promociones y descuentos.
             </p>
             
             <form 
-              action="https://formspree.io/f/aaronmcabrera@gmail.com" 
+              action="https://formspree.io/f/xjglwvoa" 
               method="POST"
               className="flex w-full max-w-sm border border-white/10 rounded-sm overflow-hidden"
             >
