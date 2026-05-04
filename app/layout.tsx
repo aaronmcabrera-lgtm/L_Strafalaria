@@ -1,16 +1,16 @@
-import type { Metadata } from "next";
-import { Annapurna_SIL } from "next/font/google";
-import "./globals.css";
+import { Antonio, Inter } from 'next/font/google';
+import './globals.css';
 
-const bebas = Annapurna_SIL({
-  weight: "400",
-  subsets: ["latin"],
+const antonio = Antonio({ 
+  subsets: ['latin'],
+  weight: ['700'],
+  variable: '--font-antonio',
 });
 
-export const metadata: Metadata = {
-  title: "Simulador Strafalaria",
-  description: "Diseña tu dije personalizado",
-};
+const inter = Inter({ 
+  subsets: ['latin'],
+  variable: '--font-inter',
+});
 
 export default function RootLayout({
   children,
@@ -18,10 +18,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es">
-      <body className={bebas.className}>
-        {children}
-      </body>
+    <html lang="es" className={`${antonio.variable} ${inter.variable}`}>
+      <body className={inter.className}>{children}</body>
     </html>
   );
 }
