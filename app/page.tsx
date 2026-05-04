@@ -8,7 +8,7 @@ function Simulador() {
   const imagenPath = `/disenos/${numero}.png`;
 
   return (
-    <div className="w-full max-w-md bg-black/40 backdrop-blur-xl rounded-2xl p-8 flex flex-col gap-6 border border-white/10 shadow-2xl mx-auto relative z-10">
+    <div id="seccion-simulador" className="w-full max-w-md bg-black/40 backdrop-blur-xl rounded-2xl p-8 flex flex-col gap-6 border border-white/10 shadow-2xl mx-auto relative z-10">
       <div className="text-center">
         <h2 className="font-antonio text-xl font-bold uppercase tracking-widest text-white">Personaliza tu dije</h2>
         <p className="font-inter text-white/40 text-[10px] uppercase tracking-widest mt-1">Escribe tu número y visualiza el diseño</p>
@@ -45,35 +45,40 @@ export default function Home() {
   return (
     <main className="bg-black text-white font-inter selection:bg-[#00E676] selection:text-black">
       
-      {/* SECCIÓN HERO */}
+      {/* SECCIÓN HERO - DISEÑO RESPONSIVO DE 3 LÍNEAS */}
       <section 
-        className="relative py-20 md:py-28 text-center px-6 bg-cover bg-center bg-no-repeat min-h-[90vh] flex flex-col justify-center items-center"
+        className="relative pt-16 pb-10 md:py-28 text-center px-6 bg-cover bg-center bg-no-repeat min-h-[90vh] flex flex-col justify-center items-center"
         style={{ backgroundImage: "url('/disenos/fondo-hero.jpg')" }}
       >
         <div className="absolute inset-0 bg-black/70"></div>
-        <div className="relative z-10 max-w-4xl">
+        <div className="relative z-10 max-w-4xl w-full">
           <img src="/disenos/logo-strafalaria-white.svg" alt="Strafalaria" className="mx-auto mb-8 w-40 md:w-56" />
-          <p className="font-inter text-gray-300 text-[10px] md:text-xs uppercase tracking-[0.3em] mb-8 opacity-80">
+          
+          <p className="font-inter text-gray-300 text-[10px] md:text-xs uppercase tracking-[0.3em] mb-6 opacity-80 px-4">
             Convierte el número de tu jersey en un dije personalizado de oro o plata.
           </p>
-          <h1 className="font-antonio text-5xl md:text-[80px] font-bold mb-10 leading-[0.85] uppercase tracking-tighter text-white">
-            CONVIERTE <br/> <span className="text-white">TU NÚMERO EN JOYA</span>
+
+          <h1 className="font-antonio text-4xl md:text-[80px] font-bold mb-10 leading-[1.1] md:leading-[0.85] uppercase tracking-tighter text-white max-w-[280px] md:max-w-none mx-auto">
+            CONVIERTE <br className="md:hidden" /> 
+            TU NÚMERO <br className="md:hidden" /> 
+            EN JOYA
           </h1>
+          
           <Simulador />
         </div>
       </section>
 
-      {/* SECCIÓN GALERÍA */}
-      <section className="bg-black py-24 px-6 border-t border-white/5">
+      {/* SECCIÓN GALERÍA - BOTONES CON MEJOR PROPORCIÓN */}
+      <section className="bg-black py-12 md:py-24 px-6 border-t border-white/5">
         <div className="max-w-7xl mx-auto text-center">
           <h2 className="font-antonio text-4xl md:text-6xl font-bold mb-4 uppercase tracking-tighter italic text-white">
             CREAMOS MUCHO MÁS
           </h2>
-          <p className="font-inter text-gray-500 text-[10px] uppercase tracking-[0.2em] mb-16 max-w-2xl mx-auto">
+          <p className="font-inter text-gray-500 text-[10px] uppercase tracking-[0.2em] mb-12 max-w-2xl mx-auto">
             Contáctanos y diseñaremos juntos una joya que llevarás siempre contigo, te representará y más que un simple logo, será parte de tú identidad.
           </p>
 
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mt-16">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             {[
               { id: 1, nombre: "TEAM", tags: ["14K", "P.925", "Zirconias"] },
               { id: 2, nombre: "BLOOD", tags: ["14K", "P.925", "Esmalte"] },
@@ -97,7 +102,8 @@ export default function Home() {
                     ))}
                   </div>
                   <div className="mt-auto">
-                    <button className="w-full py-4 bg-gradient-to-r from-[#00E5FF] to-[#00E676] text-black font-black uppercase text-sm tracking-tighter rounded-sm hover:brightness-110 transition-all italic">
+                    {/* Ajuste final: text-[10px] y tracking-widest para mayor balance y elegancia */}
+                    <button className="w-full py-3.5 bg-gradient-to-r from-[#00E5FF] to-[#00E676] text-black font-black uppercase text-[10px] tracking-widest rounded-sm hover:brightness-110 transition-all italic">
                       COTIZA EL TUYO
                     </button>
                   </div>
@@ -108,9 +114,9 @@ export default function Home() {
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer className="bg-black py-24 px-6 border-t border-white/10 text-center">
-        <h2 className="font-antonio text-3xl md:text-5xl font-bold mb-10 uppercase tracking-tighter text-white">
+      {/* FOOTER - ESPACIADO OPTIMIZADO */}
+      <footer className="bg-black py-12 md:py-24 px-6 border-t border-white/10 text-center">
+        <h2 className="font-antonio text-3xl md:text-5xl font-bold mb-8 uppercase tracking-tighter text-white leading-none">
           DISEÑA Y DESCARGA EL TUYO AHORA
         </h2>
         
@@ -121,12 +127,12 @@ export default function Home() {
           COMIENZA YA
         </a>
 
-        <p className="font-inter text-gray-400 text-[11px] md:text-xs uppercase tracking-widest mb-24 max-w-md mx-auto leading-relaxed">
+        <p className="font-inter text-gray-400 text-[11px] md:text-xs uppercase tracking-widest mb-16 max-w-md mx-auto leading-relaxed px-4">
           Descarga y envía tu diseño, obtendrás <br/> 
           <span className="text-[#00E676] font-extrabold text-sm">10% de descuento</span> en tu primera compra.
         </p>
 
-        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 pt-16 border-t border-white/5 items-center">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 pt-10 border-t border-white/5 items-center">
           <div className="flex flex-col items-center md:items-start gap-6">
             <img src="/disenos/logo-strafalaria-white.svg" alt="Strafalaria" className="h-10 opacity-60" />
             <div className="flex gap-4 items-center">
@@ -146,7 +152,6 @@ export default function Home() {
               Subscríbete a nuestro newsletter, recibirás antes que nadie <br/> información acerca de nuestros nuevos productos, promociones y descuentos.
             </p>
             
-            {/* FORMULARIO DE NEWSLETTER CONECTADO A AARONMCABRERA@GMAIL.COM */}
             <form 
               action="https://formspree.io/f/aaronmcabrera@gmail.com" 
               method="POST"
@@ -169,7 +174,7 @@ export default function Home() {
           </div>
         </div>
 
-        <p className="mt-20 font-inter text-[8px] text-gray-600 tracking-[0.6em] uppercase font-bold italic">
+        <p className="mt-16 font-inter text-[8px] text-gray-600 tracking-[0.6em] uppercase font-bold italic">
           @ 2026 Strafalaria Design. All Rights Reserved.
         </p>
       </footer>
