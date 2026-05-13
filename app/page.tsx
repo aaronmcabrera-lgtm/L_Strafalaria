@@ -93,6 +93,11 @@ function ProductCard({
 
         </div>
 
+        {/* LEYENDA */}
+        <p className="text-[9px] uppercase tracking-[0.2em] text-white/40 text-center mb-3">
+          Selecciona el material para cotizar
+        </p>
+
         {/* BOTON */}
         <div className="mt-auto">
 
@@ -242,6 +247,11 @@ function Simulador() {
         ))}
 
       </div>
+
+      {/* LEYENDA */}
+      <p className="text-[10px] uppercase tracking-[0.2em] text-white/40 text-center">
+        Selecciona el material en el que deseas cotizar tu joya
+      </p>
 
       {/* PREVIEW */}
       <div
