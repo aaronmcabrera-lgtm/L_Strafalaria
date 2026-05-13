@@ -147,14 +147,19 @@ Vengo desde la landing de Strafalaria.`
 // =========================
 function Simulador() {
 
-  const [numero, setNumero] = useState("29");
+  // INPUT VACÍO POR DEFAULT
+  const [numero, setNumero] = useState("");
 
   const [materialSeleccionado, setMaterialSeleccionado] =
     useState("ORO");
 
   const materiales = ["ORO", "PLATA", "BAÑO ORO"];
 
-  const imagenPath = `/disenos/${numero}.png`;
+  // SI NO HAY TEXTO -> CARGA TU-NUMERO.png
+  const imagenPath =
+    numero.trim() === ""
+      ? "/disenos/TU-NUMERO.png"
+      : `/disenos/${numero}.png`;
 
   return (
     <div
@@ -195,6 +200,7 @@ function Simulador() {
       <input
         type="text"
         value={numero}
+        placeholder="ESCRIBE AQUÍ TU NÚMERO"
         onChange={(e) => setNumero(e.target.value.slice(0, 3))}
         className="
           font-antonio
@@ -206,11 +212,15 @@ function Simulador() {
           border-white/10
           rounded-lg
           text-center
-          text-3xl
+          text-xl
+          md:text-2xl
           font-bold
           outline-none
           focus:border-[#00E676]
           transition-colors
+          placeholder:text-white/25
+          placeholder:tracking-widest
+          placeholder:text-sm
         "
       />
 
@@ -294,7 +304,7 @@ function Simulador() {
         href={`https://wa.me/5215510141024?text=${encodeURIComponent(
 `Hola Strafalaria, quiero cotizar mi dije personalizado.
 
-Número: ${numero}
+Número: ${numero || "SIN ESPECIFICAR"}
 Material: ${materialSeleccionado}
 
 Vengo desde la landing de Strafalaria.`
@@ -373,15 +383,17 @@ export default function Home() {
             className="mx-auto mb-8 w-40 md:w-56"
           />
 
-          <p className="font-inter text-gray-300 text-[10px] md:text-xs uppercase tracking-[0.3em] mb-6 opacity-80 px-4">
+          {/* SUBTITULO */}
+          <p className="font-inter text-gray-300 text-[11px] md:text-sm uppercase tracking-[0.3em] mb-6 opacity-80 px-4">
             Convierte el número de tu jersey en un dije personalizado de oro o plata.
           </p>
 
+          {/* TITULO */}
           <h1
             className="
               font-antonio
-              text-4xl
-              md:text-[80px]
+              text-2xl
+              md:text-[54px]
               font-bold
               mb-10
               leading-[1.1]
