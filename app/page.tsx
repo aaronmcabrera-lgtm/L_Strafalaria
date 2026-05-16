@@ -93,11 +93,6 @@ function ProductCard({
 
         </div>
 
-        {/* LEYENDA */}
-        <p className="text-[9px] uppercase tracking-[0.2em] text-white/40 text-center mb-3">
-          Selecciona el material para cotizar
-        </p>
-
         {/* BOTON */}
         <div className="mt-auto">
 
@@ -147,7 +142,6 @@ Vengo desde la landing de Strafalaria.`
 // =========================
 function Simulador() {
 
-  // INPUT VACÍO POR DEFAULT
   const [numero, setNumero] = useState("");
 
   const [materialSeleccionado, setMaterialSeleccionado] =
@@ -155,11 +149,15 @@ function Simulador() {
 
   const materiales = ["ORO", "PLATA", "BAÑO ORO"];
 
-  // SI NO HAY TEXTO -> CARGA TU-NUMERO.png
+  // =========================
+  // LOGICA DE IMAGEN SEGUN MATERIAL
+  // =========================
   const imagenPath =
     numero.trim() === ""
       ? "/disenos/TU-NUMERO.png"
-      : `/disenos/${numero}.png`;
+      : materialSeleccionado === "PLATA"
+        ? `/disenos/${numero}-silver.png`
+        : `/disenos/${numero}-gold.png`;
 
   return (
     <div
@@ -186,46 +184,18 @@ function Simulador() {
       {/* HEADER */}
       <div className="text-center">
 
-        <h2 className="font-antonio text-xl font-bold uppercase tracking-widest text-white">
+        <h2 className="font-antonio text-[29px] md:text-[34px] font-bold uppercase tracking-widest text-white leading-none">
           Personaliza tu dije
         </h2>
 
-        <p className="font-inter text-white/40 text-[10px] uppercase tracking-widest mt-1">
-          Escribe tu número y visualiza el diseño
+        <p className="font-inter text-white/40 text-[10px] uppercase tracking-[0.2em] mt-3 leading-relaxed">
+          Selecciona el material, escribe tu número y visualiza el diseño
         </p>
 
       </div>
 
-      {/* INPUT */}
-      <input
-        type="text"
-        value={numero}
-        placeholder="ESCRIBE AQUÍ TU NÚMERO"
-        onChange={(e) => setNumero(e.target.value.slice(0, 3))}
-        className="
-          font-antonio
-          px-4
-          py-4
-          bg-black/60
-          text-white
-          border
-          border-white/10
-          rounded-lg
-          text-center
-          text-xl
-          md:text-2xl
-          font-bold
-          outline-none
-          focus:border-[#00E676]
-          transition-colors
-          placeholder:text-white/25
-          placeholder:tracking-widest
-          placeholder:text-sm
-        "
-      />
-
       {/* SELECTOR MATERIAL */}
-      <div className="flex flex-wrap justify-center gap-2">
+      <div className="flex flex-wrap justify-center gap-2 -mt-2">
 
         {materiales.map((material) => (
 
@@ -258,10 +228,33 @@ function Simulador() {
 
       </div>
 
-      {/* LEYENDA */}
-      <p className="text-[10px] uppercase tracking-[0.2em] text-white/40 text-center">
-        Selecciona el material en el que deseas cotizar tu joya
-      </p>
+      {/* INPUT */}
+      <input
+        type="text"
+        value={numero}
+        placeholder="ESCRIBE AQUÍ TU NÚMERO"
+        onChange={(e) => setNumero(e.target.value.slice(0, 3))}
+        className="
+          font-antonio
+          px-4
+          py-4
+          bg-black/60
+          text-white
+          border
+          border-white/10
+          rounded-lg
+          text-center
+          text-xl
+          md:text-2xl
+          font-bold
+          outline-none
+          focus:border-[#00E676]
+          transition-colors
+          placeholder:text-white/25
+          placeholder:tracking-widest
+          placeholder:text-sm
+        "
+      />
 
       {/* PREVIEW */}
       <div
@@ -301,7 +294,7 @@ function Simulador() {
 
       {/* BOTON */}
       <a
-        href={`https://wa.me/5215510141024?text=${encodeURIComponent(
+        href={`https://wa.me/5215549614585?text=${encodeURIComponent(
 `Hola Strafalaria, quiero cotizar mi dije personalizado.
 
 Número: ${numero || "SIN ESPECIFICAR"}
@@ -392,16 +385,16 @@ export default function Home() {
           <h1
             className="
               font-antonio
-              text-2xl
-              md:text-[54px]
+              text-[39px]
+              md:text-[80px]
               font-bold
               mb-10
-              leading-[1.1]
+              leading-[1.05]
               md:leading-[0.85]
               uppercase
               tracking-tighter
               text-white
-              max-w-[280px]
+              max-w-[320px]
               md:max-w-none
               mx-auto
             "
