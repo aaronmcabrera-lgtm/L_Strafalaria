@@ -97,7 +97,7 @@ function ProductCard({
         <div className="mt-auto">
 
           <a
-            href={`https://wa.me/5215510141024?text=${encodeURIComponent(
+            href={`https://wa.me/5215549614585?text=${encodeURIComponent(
 `Hola, quiero cotizar este diseño.
 
 Modelo: ${prod.nombre}
