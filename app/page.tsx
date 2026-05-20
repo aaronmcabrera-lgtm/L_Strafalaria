@@ -335,11 +335,11 @@ Vengo desde la landing de Strafalaria.`
 export default function Home() {
 
   const productos = [
-    { id: 1, nombre: "TEAM" },
-    { id: 2, nombre: "BLOOD" },
-    { id: 3, nombre: "IDENT" },
-    { id: 4, nombre: "WINNER" },
-    { id: 5, nombre: "LUX" },
+    { id: 1, nombre: "CREW" },
+    { id: 2, nombre: "ICONIC" },
+    { id: 3, nombre: "HONOR" },
+    { id: 4, nombre: "ROSTER" },
+    { id: 5, nombre: "ELITE" },
   ];
 
   return (
@@ -415,13 +415,13 @@ export default function Home() {
 
         <div className="max-w-7xl mx-auto text-center">
 
-          <h2 className="font-antonio text-4xl md:text-6xl font-bold mb-4 uppercase tracking-tighter italic text-white">
-            CREAMOS MUCHO MÁS
+          <h2 className="font-antonio text-4xl md:text-6xl font-bold mb-4 uppercase tracking-[0.18em] italic text-white">
+            MORE THAN JEWELRY
           </h2>
 
-          <p className="font-inter text-gray-500 text-[10px] uppercase tracking-[0.2em] mb-12 max-w-2xl mx-auto">
-            Contáctanos y diseñaremos juntos una joya que llevarás siempre contigo,
-            te representará y más que un simple logo, será parte de tú identidad.
+          <p className="font-inter text-gray-500 text-[10px] uppercase tracking-[0.2em] mb-12 max-w-2xl mx-auto leading-relaxed">
+            We create pieces that represent identity, legacy and belonging.
+            More than jewelry — symbols made to stay with you forever.
           </p>
 
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
