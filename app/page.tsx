@@ -416,12 +416,12 @@ export default function Home() {
         <div className="max-w-7xl mx-auto text-center">
 
           <h2 className="font-antonio text-4xl md:text-6xl font-bold mb-4 uppercase tracking-[0.18em] italic text-white">
-            MORE THAN JEWELRY
+            MÁS QUE JOYAS
           </h2>
 
           <p className="font-inter text-gray-500 text-[10px] uppercase tracking-[0.2em] mb-12 max-w-2xl mx-auto leading-relaxed">
-            We create pieces that represent identity, legacy and belonging.
-            More than jewelry — symbols made to stay with you forever.
+            Creamos piezas que representan identidad, legado y pertenencia.
+            Más que joyas: símbolos creados para permanecer contigo para siempre
           </p>
 
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
