@@ -238,21 +238,24 @@ function Simulador() {
           font-antonio
           px-4
           py-4
-          bg-black/60
+          bg-black/70
           text-white
-          border
-          border-white/10
-          rounded-lg
+          border-2
+          border-[#00E676]
+          rounded-xl
           text-center
           text-xl
           md:text-2xl
           font-bold
           outline-none
-          focus:border-[#00E676]
-          transition-colors
-          placeholder:text-white/25
-          placeholder:tracking-widest
+          focus:border-[#00E5FF]
+          focus:shadow-[0_0_20px_rgba(0,229,255,0.35)]
+          transition-all
+          duration-300
+          placeholder:text-white/55
+          placeholder:tracking-[0.25em]
           placeholder:text-sm
+          shadow-[0_0_15px_rgba(0,230,118,0.15)]
         "
       />
 
@@ -338,8 +341,8 @@ export default function Home() {
     { id: 1, nombre: "CREW" },
     { id: 2, nombre: "ICONIC" },
     { id: 3, nombre: "HONOR" },
-    { id: 4, nombre: "ROSTER" },
-    { id: 5, nombre: "ELITE" },
+    { id: 4, nombre: "LEGACY" },
+    { id: 5, nombre: "SIGNATURE" },
   ];
 
   return (
@@ -416,12 +419,12 @@ export default function Home() {
         <div className="max-w-7xl mx-auto text-center">
 
           <h2 className="font-antonio text-4xl md:text-6xl font-bold mb-4 uppercase tracking-[0.18em] italic text-white">
-            MÁS QUE JOYAS
+            MORE THAN JEWELRY
           </h2>
 
           <p className="font-inter text-gray-500 text-[10px] uppercase tracking-[0.2em] mb-12 max-w-2xl mx-auto leading-relaxed">
-            Creamos piezas que representan identidad, legado y pertenencia.
-            Más que joyas: símbolos creados para permanecer contigo para siempre
+            We create pieces that represent identity, legacy and belonging.
+            More than jewelry — symbols made to stay with you forever.
           </p>
 
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
@@ -440,118 +443,6 @@ export default function Home() {
         </div>
 
       </section>
-
-      {/* FOOTER */}
-      <footer className="bg-black py-12 md:py-24 px-6 border-t border-white/10 text-center">
-
-        <h2 className="font-antonio text-3xl md:text-5xl font-bold mb-8 uppercase tracking-tighter text-white leading-none">
-          DISEÑA Y DESCARGA EL TUYO AHORA
-        </h2>
-
-        <a
-          href="#seccion-simulador"
-          className="
-            font-antonio
-            bg-[#f3a473]
-            text-black
-            px-14
-            py-4
-            rounded-xl
-            font-bold
-            text-3xl
-            uppercase
-            tracking-tighter
-            hover:bg-[#ffb68c]
-            transition-all
-            inline-block
-            mb-8
-            shadow-lg
-          "
-        >
-          COMIENZA YA
-        </a>
-
-        <p className="font-inter text-gray-400 text-[11px] md:text-xs uppercase tracking-widest mb-16 max-w-md mx-auto leading-relaxed px-4">
-          Descarga y envía tu diseño, obtendrás <br />
-          <span className="text-[#00E676] font-extrabold text-sm">
-            10% de descuento
-          </span>{" "}
-          en tu primera compra.
-        </p>
-
-        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 pt-10 border-t border-white/5 items-center">
-
-          <div className="flex flex-col items-center md:items-start gap-6">
-
-            <img
-              src="/disenos/logo-strafalaria-white.svg"
-              alt="Strafalaria"
-              className="h-10 opacity-60"
-            />
-
-          </div>
-
-          <div className="flex flex-col items-center md:items-end gap-4">
-
-            <p className="font-inter text-[9px] text-gray-500 uppercase tracking-widest text-center md:text-right leading-relaxed">
-              Subscríbete a nuestro newsletter para recibir promociones y descuentos.
-            </p>
-
-            <form
-              action="https://formspree.io/f/xjglwvoa"
-              method="POST"
-              className="flex w-full max-w-sm border border-white/10 rounded-sm overflow-hidden"
-            >
-
-              <input
-                type="email"
-                name="email"
-                required
-                className="
-                  bg-white/10
-                  flex-grow
-                  px-4
-                  py-3
-                  text-[10px]
-                  outline-none
-                  font-inter
-                  uppercase
-                  tracking-widest
-                  text-white
-                  placeholder-gray-600
-                "
-                placeholder="EMAIL"
-              />
-
-              <button
-                type="submit"
-                className="
-                  bg-[#f3a473]
-                  text-black
-                  font-bold
-                  uppercase
-                  text-[10px]
-                  px-6
-                  py-3
-                  tracking-widest
-                  hover:bg-[#ffb68c]
-                  transition-colors
-                "
-              >
-                REGÍSTRATE
-              </button>
-
-            </form>
-
-          </div>
-
-        </div>
-
-        <p className="mt-16 font-inter text-[8px] text-gray-600 tracking-[0.6em] uppercase font-bold italic">
-          @ 2026 Strafalaria Design. All Rights Reserved.
-        </p>
-
-      </footer>
 
     </main>
   );
