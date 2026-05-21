@@ -365,6 +365,21 @@ export default function Home() {
         `}
       </Script>
 
+      {/* Google Analytics (GA4) Oficial para Strafalaria */}
+      <Script
+        src="https://www.googletagmanager.com/gtag/js?id=G-8DLPVZSJCL"
+        strategy="afterInteractive"
+      />
+      <Script id="google-analytics" strategy="afterInteractive">
+        {`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+
+          gtag('config', 'G-8DLPVZSJCL');
+        `}
+      </Script>
+
       {/* HERO */}
       <section
         className="
@@ -440,7 +455,7 @@ export default function Home() {
           </h2>
 
           <p className="font-inter text-gray-500 text-[10px] uppercase tracking-[0.2em] mb-12 max-w-2xl mx-auto leading-relaxed">
-            Creamos piezas que representan identidad, legado y pertenencia.
+            Creamos piezas que representan identidad, legacy y pertenencia.
             Más que joyas: símbolos creados para permanecer contigo para siempre
           </p>
 
