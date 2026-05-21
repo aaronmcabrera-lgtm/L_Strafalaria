@@ -27,7 +27,7 @@ function ProductCard({
       <div className="aspect-square relative p-4 pb-2 bg-black/10">
 
         <img
-          src={`/disonos/prod-${prod.id}.png`}
+          src={`/disenos/prod-${prod.id}.png`}
           alt={prod.nombre}
           className="
             w-full
@@ -383,7 +383,7 @@ export default function Home() {
           justify-center
           items-center
         "
-        style={{ backgroundImage: "url('/disonos/fondo-hero.jpg')" }}
+        style={{ backgroundImage: "url('/disenos/fondo-hero.jpg')" }}
       >
 
         <div className="absolute inset-0 bg-black/70"></div>
@@ -391,7 +391,7 @@ export default function Home() {
         <div className="relative z-10 max-w-4xl w-full">
 
           <img
-            src="/disonos/logo-strafalaria-white.svg"
+            src="/disenos/logo-strafalaria-white.svg"
             alt="Strafalaria"
             className="mx-auto mb-8 w-40 md:w-56"
           />
