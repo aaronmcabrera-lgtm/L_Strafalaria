@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Script from "next/script";
 
 // =========================
 // PRODUCT CARD
@@ -26,7 +27,7 @@ function ProductCard({
       <div className="aspect-square relative p-4 pb-2 bg-black/10">
 
         <img
-          src={`/disenos/prod-${prod.id}.png`}
+          src={`/disonos/prod-${prod.id}.png`}
           alt={prod.nombre}
           className="
             w-full
@@ -347,6 +348,22 @@ export default function Home() {
 
   return (
     <main className="bg-black text-white font-inter selection:bg-[#00E676] selection:text-black">
+      
+      {/* Píxel de Meta Oficial para Strafalaria */}
+      <Script id="fb-pixel" strategy="afterInteractive">
+        {`
+          !function(f,b,e,v,n,t,s)
+          {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+          n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+          if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+          n.queue=[];t=b.createElement(e);t.async=!0;
+          t.src=v;s=b.getElementsByTagName(e)[0];
+          s.parentNode.insertBefore(t,s)}(window, document,'script',
+          'https://connect.facebook.net/en_US/fbevents.js');
+          fbq('init', '504498228318924');
+          fbq('track', 'PageView');
+        `}
+      </Script>
 
       {/* HERO */}
       <section
@@ -366,7 +383,7 @@ export default function Home() {
           justify-center
           items-center
         "
-        style={{ backgroundImage: "url('/disenos/fondo-hero.jpg')" }}
+        style={{ backgroundImage: "url('/disonos/fondo-hero.jpg')" }}
       >
 
         <div className="absolute inset-0 bg-black/70"></div>
@@ -374,7 +391,7 @@ export default function Home() {
         <div className="relative z-10 max-w-4xl w-full">
 
           <img
-            src="/disenos/logo-strafalaria-white.svg"
+            src="/disonos/logo-strafalaria-white.svg"
             alt="Strafalaria"
             className="mx-auto mb-8 w-40 md:w-56"
           />
