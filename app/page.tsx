@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -54,17 +53,12 @@ function ProductCard({
 
   const mensajeWhatsApp =
     materialActivo.key === "ORO"
-      ? `Hola Strafalaria, quiero cotizar el modelo ${prod.nombre} en ORO DE 14KTS.
-
-Vengo desde la landing de Strafalaria.`
-      : `Hola, estoy interesado en el modelo ${prod.nombre}.
-
-Material: ${materialActivo.titulo}`;
+      ? `Hola Strafalaria, quiero cotizar el modelo ${prod.nombre} en ORO 14KTS.`
+      : `Hola, quiero el modelo ${prod.nombre}. Material: ${materialActivo.titulo}`;
 
   return (
     <div className="bg-neutral-900/40 border border-white/5 rounded-3xl flex flex-col overflow-hidden backdrop-blur-xl">
 
-      {/* IMAGE */}
       <div className="aspect-square p-4 bg-black/20">
         <img
           src={`/disenos/prod-${prod.id}.png`}
@@ -73,14 +67,12 @@ Material: ${materialActivo.titulo}`;
         />
       </div>
 
-      {/* CONTENT */}
       <div className="px-4 pb-4 pt-2 flex flex-col gap-4">
 
-        <h3 className="font-antonio text-[22px] uppercase text-center text-white tracking-[0.2em]">
+        <h3 className="font-antonio text-[22px] uppercase text-center tracking-[0.2em] text-white">
           {prod.nombre}
         </h3>
 
-        {/* MATERIALS */}
         <div className="flex flex-col gap-2">
 
           {materiales.map((m) => (
@@ -103,7 +95,6 @@ Material: ${materialActivo.titulo}`;
 
         </div>
 
-        {/* CTA */}
         <a
           href={`https://wa.me/5215549614585?text=${encodeURIComponent(
             mensajeWhatsApp
@@ -120,7 +111,7 @@ Material: ${materialActivo.titulo}`;
 }
 
 /* =========================
-   SIMULADOR
+   SIMULADOR (INPUT FIX)
 ========================= */
 function Simulador() {
   const [numero, setNumero] = useState("");
@@ -149,11 +140,36 @@ function Simulador() {
         PERSONALIZA TU DIJE
       </h2>
 
+      {/* INPUT CORREGIDO */}
       <input
+        type="text"
         value={numero}
-        onChange={(e) => setNumero(e.target.value.slice(0, 3))}
         placeholder="ESCRIBE AQUÍ TU NÚMERO"
-        className="w-full px-4 py-4 text-center text-2xl bg-black/70 border border-[#00E676] rounded-2xl text-white"
+        onChange={(e) => setNumero(e.target.value.slice(0, 3))}
+        className="
+          font-antonio
+          px-4
+          py-3
+          bg-black/70
+          text-white
+          border-2
+          border-[#00E676]
+          rounded-2xl
+          text-center
+
+          text-xl md:text-2xl
+          font-extrabold
+
+          outline-none
+          focus:border-[#00E5FF]
+          transition-all
+
+          placeholder:text-white/50
+          placeholder:text-[11px] md:placeholder:text-[14px]
+
+          tracking-[0.12em]
+          leading-none
+        "
       />
 
       <div className="mt-4 bg-black/20 p-4 rounded-2xl flex justify-center">
@@ -225,7 +241,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* FOOTER FINAL */}
+      {/* FOOTER */}
       <footer className="border-t border-white/5 py-14 px-6 bg-black">
 
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between gap-12">
@@ -236,28 +252,33 @@ export default function Home() {
             <img
               src="/disenos/logo-strafalaria-white.svg"
               className="w-32 opacity-90"
+              alt="Strafalaria"
             />
 
             <div className="flex gap-5">
 
-              {/* IG */}
-              <a href="https://instagram.com" className="w-10 h-10 flex items-center justify-center border border-white/10 rounded-full">
-                <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-white">
-                  <path d="M7 2C4 2 2 4 2 7v10c0 3 2 5 5 5h10c3 0 5-2 5-5V7c0-3-2-5-5-5H7zm10 2a3 3 0 110 6 3 3 0 010-6zM12 7a5 5 0 110 10 5 5 0 010-10z"/>
-                </svg>
+              <a
+                href="https://www.instagram.com/strafalaria.mx/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 flex items-center justify-center border border-white/10 rounded-full"
+              >
+                IG
               </a>
 
-              {/* FB */}
-              <a href="https://facebook.com" className="w-10 h-10 flex items-center justify-center border border-white/10 rounded-full">
-                <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-white">
-                  <path d="M22 12a10 10 0 10-12 9v-7h-2v-2h2V9c0-2 1-3 3-3h2v2h-2c-1 0-1 0-1 1v2h3l-1 2h-2v7a10 10 0 009-9z"/>
-                </svg>
+              <a
+                href="https://www.facebook.com/Strafalaria.mx/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 flex items-center justify-center border border-white/10 rounded-full"
+              >
+                FB
               </a>
 
             </div>
           </div>
 
-          {/* RIGHT */}
+          {/* RIGHT - FORM */}
           <div className="w-full md:w-1/2 flex flex-col items-center md:items-end text-center md:text-right gap-4">
 
             <p className="text-white/60 text-[11px] uppercase tracking-[0.18em] max-w-md">
@@ -265,22 +286,22 @@ export default function Home() {
             </p>
 
             <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                const email = (e.currentTarget.elements[0] as HTMLInputElement).value;
-                alert(email);
-                e.currentTarget.reset();
-              }}
+              action="https://formspree.io/f/xjglwvoa"
+              method="POST"
               className="flex flex-col sm:flex-row gap-3 w-full max-w-md"
             >
               <input
+                name="email"
                 type="email"
                 required
-                placeholder="Tu correo"
+                placeholder="Tu correo electrónico"
                 className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white"
               />
 
-              <button className="px-5 py-3 bg-gradient-to-r from-[#00E5FF] to-[#00E676] text-black rounded-xl">
+              <button
+                type="submit"
+                className="px-5 py-3 bg-gradient-to-r from-[#00E5FF] to-[#00E676] text-black rounded-xl font-bold uppercase text-xs"
+              >
                 Unirme
               </button>
             </form>
