@@ -687,7 +687,7 @@ export default function Home() {
 
       </section>
 
-      {/* PRODUCTOS */}
+            {/* PRODUCTOS */}
       <section className="bg-black py-14 md:py-24 px-6 border-t border-white/5">
 
         <div className="max-w-7xl mx-auto text-center">
@@ -716,6 +716,25 @@ export default function Home() {
         </div>
 
       </section>
+
+      {/* FOOTER */}
+      <footer className="border-t border-white/5 py-10 px-6 bg-black">
+
+        <div className="max-w-6xl mx-auto text-center">
+
+          <img
+            src="/disenos/logo-strafalaria-white.svg"
+            alt="Strafalaria"
+            className="w-28 mx-auto mb-6 opacity-80"
+          />
+
+          <p className="text-white/35 text-[10px] uppercase tracking-[0.25em]">
+            Strafalaria © 2026 · Todos los derechos reservados
+          </p>
+
+        </div>
+
+      </footer>
 
     </main>
   );
