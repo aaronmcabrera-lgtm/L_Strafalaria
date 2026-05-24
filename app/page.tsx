@@ -22,6 +22,9 @@ function ProductCard({
       titulo: "BAÑO DE ORO",
       precio: prod.bano,
       boton: "COMPRAR AHORA",
+
+      // SOLO ROSTER
+      destacado: prod.nombre === "ROSTER",
     },
     {
       key: "PLATA",
@@ -29,8 +32,10 @@ function ProductCard({
       precio: prod.plata,
       boton: "COMPRAR AHORA",
 
-      // TODOS EXCEPTO ELITE
-      destacado: prod.nombre !== "ELITE",
+      // TODOS EXCEPTO ELITE Y ROSTER
+      destacado:
+        prod.nombre !== "ELITE" &&
+        prod.nombre !== "ROSTER",
     },
     {
       key: "ORO",
@@ -50,7 +55,9 @@ function ProductCard({
     useState(
       prod.nombre === "ELITE"
         ? "ORO"
-        : "PLATA"
+        : prod.nombre === "ROSTER"
+          ? "BAÑO ORO"
+          : "PLATA"
     );
 
   const materialActivo =
@@ -391,7 +398,9 @@ Material: ${materialActivo.titulo}
           focus:border-[#00E5FF]
           transition-all
           placeholder:text-white/50
-          tracking-[0.12em]
+          placeholder:text-[13px]
+          md:placeholder:text-[18px]
+          tracking-[0.08em]
         "
       />
 
