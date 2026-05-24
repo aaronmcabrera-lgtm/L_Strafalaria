@@ -1,10 +1,11 @@
+
 "use client";
 
 import { useState } from "react";
 
-// =========================
-// PRODUCT CARD
-// =========================
+/* =========================
+   PRODUCT CARD
+========================= */
 function ProductCard({
   prod,
 }: {
@@ -15,15 +16,12 @@ function ProductCard({
     bano: string;
   };
 }) {
-
   const materiales = [
     {
       key: "BAÑO ORO",
       titulo: "BAÑO DE ORO",
       precio: prod.bano,
       boton: "COMPRAR AHORA",
-
-      // SOLO ROSTER
       destacado: prod.nombre === "ROSTER",
     },
     {
@@ -31,708 +29,269 @@ function ProductCard({
       titulo: "PLATA",
       precio: prod.plata,
       boton: "COMPRAR AHORA",
-
-      // TODOS EXCEPTO ELITE Y ROSTER
-      destacado:
-        prod.nombre !== "ELITE" &&
-        prod.nombre !== "ROSTER",
+      destacado: prod.nombre !== "ELITE" && prod.nombre !== "ROSTER",
     },
     {
       key: "ORO",
       titulo: "ORO DE 14KTS",
       precio: "COTIZAR",
       boton: "COTIZAR",
-
-      // SOLO ELITE
       destacado: prod.nombre === "ELITE",
     },
   ];
 
-  // =========================
-  // DEFAULT MATERIAL
-  // =========================
-  const [materialSeleccionado, setMaterialSeleccionado] =
-    useState(
-      prod.nombre === "ELITE"
-        ? "ORO"
-        : prod.nombre === "ROSTER"
-          ? "BAÑO ORO"
-          : "PLATA"
-    );
+  const [materialSeleccionado, setMaterialSeleccionado] = useState(
+    prod.nombre === "ELITE"
+      ? "ORO"
+      : prod.nombre === "ROSTER"
+      ? "BAÑO ORO"
+      : "PLATA"
+  );
 
   const materialActivo =
-    materiales.find(
-      (m) => m.key === materialSeleccionado
-    ) || materiales[1];
+    materiales.find((m) => m.key === materialSeleccionado) ||
+    materiales[1];
 
-  // =========================
-  // MENSAJE WHATSAPP
-  // =========================
   const mensajeWhatsApp =
     materialActivo.key === "ORO"
       ? `Hola Strafalaria, quiero cotizar el modelo ${prod.nombre} en ORO DE 14KTS.
 
 Vengo desde la landing de Strafalaria.`
-      : `Hola, estoy interesado en la compra del modelo ${prod.nombre}.
+      : `Hola, estoy interesado en el modelo ${prod.nombre}.
 
-Material: ${materialActivo.titulo}
-
-¿Cuál es la forma de pago?`;
+Material: ${materialActivo.titulo}`;
 
   return (
-    <div
-      className="
-        bg-neutral-900/40
-        border
-        border-white/5
-        rounded-3xl
-        flex
-        flex-col
-        overflow-hidden
-        backdrop-blur-xl
-      "
-    >
+    <div className="bg-neutral-900/40 border border-white/5 rounded-3xl flex flex-col overflow-hidden backdrop-blur-xl">
 
-      {/* IMAGEN */}
-      <div className="aspect-square relative p-4 pb-2 bg-black/20">
-
+      {/* IMAGE */}
+      <div className="aspect-square p-4 bg-black/20">
         <img
           src={`/disenos/prod-${prod.id}.png`}
           alt={prod.nombre}
-          className="
-            w-full
-            h-full
-            object-contain
-            transition-transform
-            duration-700
-            hover:scale-105
-          "
+          className="w-full h-full object-contain hover:scale-105 transition"
         />
-
       </div>
 
-      {/* CONTENIDO */}
-      <div className="px-4 pb-4 pt-2 flex flex-col flex-grow">
+      {/* CONTENT */}
+      <div className="px-4 pb-4 pt-2 flex flex-col gap-4">
 
-        {/* TITULO */}
-        <h3
-          className="
-            font-antonio
-            text-[24px]
-            uppercase
-            italic
-            tracking-[0.20em]
-            text-center
-            mb-4
-            text-white
-          "
-        >
+        <h3 className="font-antonio text-[22px] uppercase text-center text-white tracking-[0.2em]">
           {prod.nombre}
         </h3>
 
-        {/* MATERIALES */}
-        <div className="flex flex-col gap-2.5">
+        {/* MATERIALS */}
+        <div className="flex flex-col gap-2">
 
-          {materiales.map((material) => (
-
+          {materiales.map((m) => (
             <button
-              key={material.key}
-              onClick={() =>
-                setMaterialSeleccionado(material.key)
-              }
-              className={`
-                relative
-                rounded-xl
-                border
-                px-3
-                py-3
-                transition-all
-                duration-300
-                text-center
-
-                ${
-                  materialSeleccionado === material.key
-                    ? material.key === "ORO"
-                      ? "border-[#D4AF37] bg-[#D4AF37]/10"
-                      : "border-[#D4AF37] bg-[#D4AF37]/10 shadow-[0_0_18px_rgba(212,175,55,0.12)]"
-                    : "border-white/10 bg-white/[0.02]"
-                }
-              `}
+              key={m.key}
+              onClick={() => setMaterialSeleccionado(m.key)}
+              className={`rounded-xl border px-3 py-3 text-center transition ${
+                materialSeleccionado === m.key
+                  ? "border-[#D4AF37] bg-[#D4AF37]/10"
+                  : "border-white/10 bg-white/[0.02]"
+              }`}
             >
-
-              {/* BADGE */}
-              {material.destacado && (
-                <div
-                  className="
-                    absolute
-                    -top-2
-                    right-2
-                    bg-[#D4AF37]
-                    text-black
-                    text-[7px]
-                    px-2
-                    py-[3px]
-                    rounded-full
-                    uppercase
-                    tracking-[0.18em]
-                    font-black
-                  "
-                >
-                  MÁS VENDIDO
-                </div>
-              )}
-
-              {/* TITULO */}
-              <div
-                className={`
-                  font-antonio
-                  uppercase
-                  tracking-[0.16em]
-                  text-[12px]
-                  leading-none
-
-                  ${
-                    materialSeleccionado === material.key
-                      ? "text-[#D4AF37]"
-                      : "text-white"
-                  }
-                `}
-              >
-                {material.titulo}
+              <div className="text-[12px] uppercase text-white">
+                {m.titulo}
               </div>
 
-              {/* DESDE */}
-              {material.key !== "ORO" && (
-                <div className="text-[7px] uppercase tracking-[0.30em] text-white/35 mt-1.5">
-                  Desde
-                </div>
-              )}
-
-              {/* PRECIO */}
-              <div
-                className={`
-                  font-antonio
-                  mt-1
-                  leading-none
-
-                  ${
-                    material.key === "ORO"
-                      ? "text-[24px]"
-                      : "text-[22px]"
-                  }
-
-                  ${
-                    materialSeleccionado === material.key
-                      ? "text-[#D4AF37]"
-                      : "text-white"
-                  }
-                `}
-              >
-                {material.precio}
-              </div>
-
+              <div className="text-white mt-1">{m.precio}</div>
             </button>
-
           ))}
 
         </div>
 
         {/* CTA */}
-        <div className="mt-4">
-
-          <a
-            href={`https://wa.me/5215549614585?text=${encodeURIComponent(
-              mensajeWhatsApp
-            )}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="
-              block
-              w-full
-              text-center
-              font-antonio
-              uppercase
-              tracking-[0.20em]
-              py-3.5
-              rounded-xl
-              text-black
-              text-[10px]
-              font-black
-              transition-all
-              duration-300
-              bg-gradient-to-r
-              from-[#00E5FF]
-              to-[#00E676]
-              hover:brightness-110
-              shadow-[0_0_20px_rgba(0,230,118,0.25)]
-            "
-          >
-            {materialActivo.boton}
-          </a>
-
-        </div>
+        <a
+          href={`https://wa.me/5215549614585?text=${encodeURIComponent(
+            mensajeWhatsApp
+          )}`}
+          target="_blank"
+          className="block text-center py-3 rounded-xl bg-gradient-to-r from-[#00E5FF] to-[#00E676] text-black font-bold text-xs uppercase"
+        >
+          {materialActivo.boton}
+        </a>
 
       </div>
-
     </div>
   );
 }
 
-// =========================
-// SIMULADOR
-// =========================
+/* =========================
+   SIMULADOR
+========================= */
 function Simulador() {
-
   const [numero, setNumero] = useState("");
+  const [materialSeleccionado, setMaterialSeleccionado] = useState("PLATA");
 
   const materiales = [
-    {
-      key: "BAÑO ORO",
-      titulo: "BAÑO DE ORO",
-      precio: "$1,200",
-      boton: "COMPRAR AHORA",
-    },
-    {
-      key: "PLATA",
-      titulo: "PLATA",
-      precio: "$990",
-      boton: "COMPRAR AHORA",
-      destacado: true,
-    },
-    {
-      key: "ORO",
-      titulo: "ORO 14KTS",
-      precio: "$7,700",
-      boton: "COTIZAR",
-    },
+    { key: "BAÑO ORO", titulo: "BAÑO DE ORO", precio: "$1,200", boton: "COMPRAR" },
+    { key: "PLATA", titulo: "PLATA", precio: "$990", boton: "COMPRAR" },
+    { key: "ORO", titulo: "ORO 14KTS", precio: "$7,700", boton: "COTIZAR" },
   ];
 
-  const [materialSeleccionado, setMaterialSeleccionado] =
-    useState("PLATA");
-
   const materialActivo =
-    materiales.find(
-      (m) => m.key === materialSeleccionado
-    ) || materiales[1];
+    materiales.find((m) => m.key === materialSeleccionado) || materiales[1];
 
-  // =========================
-  // IMAGEN
-  // =========================
   const imagenPath =
     numero.trim() === ""
       ? "/disenos/TU-NUMERO.png"
       : materialSeleccionado === "PLATA"
-        ? `/disenos/${numero}-silver.png`
-        : `/disenos/${numero}-gold.png`;
-
-  // =========================
-  // MENSAJE
-  // =========================
-  const mensajeWhatsApp =
-    materialActivo.key === "ORO"
-      ? `Hola Strafalaria, quiero cotizar mi dije personalizado.
-
-Número: ${numero || "SIN ESPECIFICAR"}
-Material: ORO 14KTS
-
-Vengo desde la landing de Strafalaria.`
-      : `Hola, estoy interesado en la compra del dije con el número "${numero || "SIN ESPECIFICAR"}".
-
-Material: ${materialActivo.titulo}
-
-¿Cuál es la forma de pago?`;
+      ? `/disenos/${numero}-silver.png`
+      : `/disenos/${numero}-gold.png`;
 
   return (
-    <div
-      className="
-        w-full
-        max-w-md
-        bg-black/40
-        backdrop-blur-xl
-        rounded-3xl
-        p-7
-        flex
-        flex-col
-        gap-5
-        border
-        border-white/10
-        shadow-2xl
-        mx-auto
-      "
-    >
+    <div className="w-full max-w-md mx-auto bg-black/40 backdrop-blur-xl rounded-3xl p-7 border border-white/10">
 
-      {/* TITULO */}
-      <div className="text-center">
+      <h2 className="text-center text-white text-[26px] uppercase font-bold mb-4">
+        PERSONALIZA TU DIJE
+      </h2>
 
-        <h2 className="font-antonio text-[30px] uppercase tracking-[0.16em] text-white leading-none">
-          PERSONALIZA TU DIJE
-        </h2>
-
-        <p className="text-white/40 text-[9px] uppercase tracking-[0.2em] mt-3">
-          Escribe tu número y selecciona el material
-        </p>
-
-      </div>
-
-      {/* INPUT */}
       <input
-        type="text"
         value={numero}
+        onChange={(e) => setNumero(e.target.value.slice(0, 3))}
         placeholder="ESCRIBE AQUÍ TU NÚMERO"
-        onChange={(e) =>
-          setNumero(e.target.value.slice(0, 3))
-        }
-        className="
-          font-antonio
-          px-4
-          py-4
-          bg-black/70
-          text-white
-          border-2
-          border-[#00E676]
-          rounded-2xl
-          text-center
-          text-2xl
-          font-bold
-          outline-none
-          focus:border-[#00E5FF]
-          transition-all
-          placeholder:text-white/50
-          placeholder:text-[13px]
-          md:placeholder:text-[18px]
-          tracking-[0.08em]
-        "
+        className="w-full px-4 py-4 text-center text-2xl bg-black/70 border border-[#00E676] rounded-2xl text-white"
       />
 
-      {/* PREVIEW */}
-      <div
-        className="
-          bg-black/20
-          p-4
-          rounded-2xl
-          border
-          border-white/5
-          flex
-          justify-center
-          min-h-[340px]
-          items-center
-          overflow-hidden
-        "
-      >
-
+      <div className="mt-4 bg-black/20 p-4 rounded-2xl flex justify-center">
         <img
           src={imagenPath}
-          alt="Dije"
-          className="
-            w-[290px]
-            h-auto
-            object-contain
-            transition-transform
-            duration-500
-            hover:scale-105
-          "
-          onError={(e) => {
-            e.currentTarget.src = "/disenos/default.png";
-          }}
+          alt="preview"
+          className="w-[260px]"
+          onError={(e) => (e.currentTarget.src = "/disenos/default.png")}
         />
-
       </div>
-
-      {/* MATERIALES */}
-      <div className="flex flex-col gap-2.5">
-
-        {materiales.map((material) => (
-
-          <button
-            key={material.key}
-            onClick={() =>
-              setMaterialSeleccionado(material.key)
-            }
-            className={`
-              relative
-              rounded-xl
-              border
-              px-4
-              py-4
-              transition-all
-              duration-300
-              text-center
-
-              ${
-                materialSeleccionado === material.key
-                  ? "border-[#D4AF37] bg-[#D4AF37]/10 shadow-[0_0_20px_rgba(212,175,55,0.12)]"
-                  : "border-white/10 bg-white/[0.02]"
-              }
-            `}
-          >
-
-            {/* BADGE */}
-            {material.destacado && (
-              <div
-                className="
-                  absolute
-                  -top-2
-                  right-2
-                  bg-[#D4AF37]
-                  text-black
-                  text-[7px]
-                  px-2
-                  py-[3px]
-                  rounded-full
-                  uppercase
-                  tracking-[0.18em]
-                  font-black
-                "
-              >
-                MÁS VENDIDO
-              </div>
-            )}
-
-            {/* TITULO */}
-            <div
-              className={`
-                font-antonio
-                uppercase
-                tracking-[0.16em]
-                text-[15px]
-                leading-none
-
-                ${
-                  materialSeleccionado === material.key
-                    ? "text-[#D4AF37]"
-                    : "text-white"
-                }
-              `}
-            >
-              {material.titulo}
-            </div>
-
-            {/* DESDE */}
-            {material.key !== "ORO" && (
-              <div className="text-[8px] uppercase tracking-[0.30em] text-white/35 mt-1.5">
-                Desde
-              </div>
-            )}
-
-            {/* PRECIO */}
-            <div
-              className={`
-                font-antonio
-                leading-none
-                mt-1
-
-                ${
-                  material.key === "ORO"
-                    ? "text-[30px]"
-                    : "text-[28px]"
-                }
-
-                ${
-                  materialSeleccionado === material.key
-                    ? "text-[#D4AF37]"
-                    : "text-white"
-                }
-              `}
-            >
-              {material.precio}
-            </div>
-
-          </button>
-
-        ))}
-
-      </div>
-
-      {/* NOTA */}
-      <div className="text-center">
-        <p className="text-[9px] text-white/40 leading-relaxed">
-          El costo de nuestro dije en oro de 14kts puede variar de acuerdo al número que se cotiza.
-          <br />
-          No incluye cadena.
-        </p>
-      </div>
-
-      {/* CTA */}
-      <a
-        href={`https://wa.me/5215549614585?text=${encodeURIComponent(
-          mensajeWhatsApp
-        )}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="
-          block
-          w-full
-          text-center
-          font-antonio
-          uppercase
-          tracking-[0.22em]
-          py-4
-          rounded-2xl
-          text-black
-          text-[11px]
-          font-black
-          transition-all
-          duration-300
-          bg-gradient-to-r
-          from-[#00E5FF]
-          to-[#00E676]
-          hover:brightness-110
-          shadow-[0_0_20px_rgba(0,230,118,0.25)]
-        "
-      >
-        {materialActivo.boton}
-      </a>
 
     </div>
   );
 }
 
-// =========================
-// HOME
-// =========================
+/* =========================
+   HOME
+========================= */
 export default function Home() {
-
   const productos = [
-    {
-      id: 1,
-      nombre: "CREW",
-      plata: "$2,400",
-      bano: "$2,700",
-    },
-    {
-      id: 2,
-      nombre: "ICONIC",
-      plata: "$2,400",
-      bano: "$2,700",
-    },
-    {
-      id: 3,
-      nombre: "HONOR",
-      plata: "$2,400",
-      bano: "$2,700",
-    },
-    {
-      id: 4,
-      nombre: "ROSTER",
-      plata: "$2,400",
-      bano: "$2,700",
-    },
-    {
-      id: 5,
-      nombre: "ELITE",
-      plata: "$2,800",
-      bano: "$3,200",
-    },
+    { id: 1, nombre: "CREW", plata: "$2,400", bano: "$2,700" },
+    { id: 2, nombre: "ICONIC", plata: "$2,400", bano: "$2,700" },
+    { id: 3, nombre: "HONOR", plata: "$2,400", bano: "$2,700" },
+    { id: 4, nombre: "ROSTER", plata: "$2,400", bano: "$2,700" },
+    { id: 5, nombre: "ELITE", plata: "$2,800", bano: "$3,200" },
   ];
 
   return (
-    <main className="bg-black text-white font-inter">
+    <main className="bg-black text-white">
 
       {/* HERO */}
-      <section
-        className="
-          relative
-          pt-16
-          pb-12
-          md:py-28
-          px-6
-          bg-cover
-          bg-center
-          min-h-[90vh]
-          flex
-          flex-col
-          justify-center
-          items-center
-        "
-        style={{
-          backgroundImage:
-            "url('/disenos/fondo-hero.jpg')",
-        }}
+      <section className="relative min-h-[90vh] flex flex-col items-center justify-center px-6 bg-cover bg-center"
+        style={{ backgroundImage: "url('/disenos/fondo-hero.jpg')" }}
       >
+        <div className="absolute inset-0 bg-black/70" />
 
-        <div className="absolute inset-0 bg-black/70"></div>
-
-        <div className="relative z-10 max-w-4xl w-full text-center">
+        <div className="relative z-10 text-center">
 
           <img
             src="/disenos/logo-strafalaria-white.svg"
-            alt="Strafalaria"
-            className="mx-auto mb-8 w-40 md:w-56"
+            className="w-40 mx-auto mb-6"
           />
 
-          <p className="text-gray-300 text-[11px] uppercase tracking-[0.3em] mb-6 opacity-80 px-4">
-            Convierte el número de tu jersey en un dije personalizado de oro o plata.
-          </p>
-
-          <h1
-            className="
-              font-antonio
-              text-[42px]
-              md:text-[84px]
-              font-bold
-              leading-[1]
-              uppercase
-              tracking-tight
-              mb-10
-            "
-          >
-            CONVIERTE TU
-            <br />
-            NÚMERO EN JOYA
+          <h1 className="text-[44px] md:text-[80px] uppercase font-bold leading-tight">
+            CONVIERTE TU NÚMERO EN JOYA
           </h1>
 
-          <Simulador />
+          <div className="mt-10">
+            <Simulador />
+          </div>
 
         </div>
-
       </section>
 
-            {/* PRODUCTOS */}
-      <section className="bg-black py-14 md:py-24 px-6 border-t border-white/5">
-
+      {/* PRODUCTS */}
+      <section className="py-16 px-6 border-t border-white/5">
         <div className="max-w-7xl mx-auto text-center">
 
-          <h2 className="font-antonio text-4xl md:text-6xl uppercase italic tracking-[0.18em] mb-4">
+          <h2 className="text-4xl uppercase italic mb-10">
             MÁS QUE JOYAS
           </h2>
 
-          <p className="text-white/45 text-[10px] uppercase tracking-[0.22em] max-w-2xl mx-auto leading-relaxed mb-12">
-            Creamos piezas que representan identidad, legacy y pertenencia.
-          </p>
-
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-5">
+            {productos.map((p) => (
+              <ProductCard key={p.id} prod={p} />
+            ))}
+          </div>
 
-            {productos.map((prod) => (
+        </div>
+      </section>
 
-              <ProductCard
-                key={prod.id}
-                prod={prod}
+      {/* FOOTER FINAL */}
+      <footer className="border-t border-white/5 py-14 px-6 bg-black">
+
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between gap-12">
+
+          {/* LEFT */}
+          <div className="flex flex-col items-center md:items-start gap-6">
+
+            <img
+              src="/disenos/logo-strafalaria-white.svg"
+              className="w-32 opacity-90"
+            />
+
+            <div className="flex gap-5">
+
+              {/* IG */}
+              <a href="https://instagram.com" className="w-10 h-10 flex items-center justify-center border border-white/10 rounded-full">
+                <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-white">
+                  <path d="M7 2C4 2 2 4 2 7v10c0 3 2 5 5 5h10c3 0 5-2 5-5V7c0-3-2-5-5-5H7zm10 2a3 3 0 110 6 3 3 0 010-6zM12 7a5 5 0 110 10 5 5 0 010-10z"/>
+                </svg>
+              </a>
+
+              {/* FB */}
+              <a href="https://facebook.com" className="w-10 h-10 flex items-center justify-center border border-white/10 rounded-full">
+                <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-white">
+                  <path d="M22 12a10 10 0 10-12 9v-7h-2v-2h2V9c0-2 1-3 3-3h2v2h-2c-1 0-1 0-1 1v2h3l-1 2h-2v7a10 10 0 009-9z"/>
+                </svg>
+              </a>
+
+            </div>
+          </div>
+
+          {/* RIGHT */}
+          <div className="w-full md:w-1/2 flex flex-col items-center md:items-end text-center md:text-right gap-4">
+
+            <p className="text-white/60 text-[11px] uppercase tracking-[0.18em] max-w-md">
+              Regístrate a nuestro newsletter y recibirás antes que nadie nuestras promociones y lanzamientos
+            </p>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                const email = (e.currentTarget.elements[0] as HTMLInputElement).value;
+                alert(email);
+                e.currentTarget.reset();
+              }}
+              className="flex flex-col sm:flex-row gap-3 w-full max-w-md"
+            >
+              <input
+                type="email"
+                required
+                placeholder="Tu correo"
+                className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white"
               />
 
-            ))}
+              <button className="px-5 py-3 bg-gradient-to-r from-[#00E5FF] to-[#00E676] text-black rounded-xl">
+                Unirme
+              </button>
+            </form>
 
           </div>
 
         </div>
 
-      </section>
-
-      {/* FOOTER */}
-      <footer className="border-t border-white/5 py-10 px-6 bg-black">
-
-        <div className="max-w-6xl mx-auto text-center">
-
-          <img
-            src="/disenos/logo-strafalaria-white.svg"
-            alt="Strafalaria"
-            className="w-28 mx-auto mb-6 opacity-80"
-          />
-
-          <p className="text-white/35 text-[10px] uppercase tracking-[0.25em]">
-            Strafalaria © 2026 · Todos los derechos reservados
-          </p>
-
-        </div>
+        <p className="text-center text-white/35 text-[10px] mt-10">
+          Strafalaria © 2026
+        </p>
 
       </footer>
 
