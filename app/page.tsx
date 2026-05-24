@@ -32,7 +32,7 @@ function ProductCard({
     },
     {
       key: "ORO",
-      titulo: "ORO DE 14KTS",
+      titulo: "ORO 14KTS",
       precio: "COTIZAR",
       boton: "COTIZAR",
       destacado: prod.nombre === "ELITE",
@@ -51,10 +51,7 @@ function ProductCard({
     materiales.find((m) => m.key === materialSeleccionado) ||
     materiales[1];
 
-  const mensajeWhatsApp =
-    materialActivo.key === "ORO"
-      ? `Hola Strafalaria, quiero cotizar el modelo ${prod.nombre} en ORO 14KTS.`
-      : `Hola, quiero el modelo ${prod.nombre}. Material: ${materialActivo.titulo}`;
+  const mensajeWhatsApp = `Hola Strafalaria, estoy interesado en comprar el Modelo ${prod.nombre}, en material ${materialActivo.titulo}. ¿Cuál es el tiempo de entrega y la forma de pago?`;
 
   return (
     <div className="bg-neutral-900/40 border border-white/5 rounded-3xl flex flex-col overflow-hidden backdrop-blur-xl">
@@ -100,6 +97,7 @@ function ProductCard({
             mensajeWhatsApp
           )}`}
           target="_blank"
+          rel="noopener noreferrer"
           className="block text-center py-3 rounded-xl bg-gradient-to-r from-[#00E5FF] to-[#00E676] text-black font-bold text-xs uppercase"
         >
           {materialActivo.boton}
@@ -111,20 +109,37 @@ function ProductCard({
 }
 
 /* =========================
-   SIMULADOR (INPUT FIX)
+   SIMULADOR (SIN CAMBIOS)
 ========================= */
 function Simulador() {
   const [numero, setNumero] = useState("");
   const [materialSeleccionado, setMaterialSeleccionado] = useState("PLATA");
 
   const materiales = [
-    { key: "BAÑO ORO", titulo: "BAÑO DE ORO", precio: "$1,200", boton: "COMPRAR" },
-    { key: "PLATA", titulo: "PLATA", precio: "$990", boton: "COMPRAR" },
-    { key: "ORO", titulo: "ORO 14KTS", precio: "$7,700", boton: "COTIZAR" },
+    {
+      key: "BAÑO ORO",
+      titulo: "BAÑO DE ORO",
+      precio: "$1,200",
+      boton: "COMPRAR AHORA",
+    },
+    {
+      key: "PLATA",
+      titulo: "PLATA",
+      precio: "$990",
+      boton: "COMPRAR AHORA",
+      destacado: true,
+    },
+    {
+      key: "ORO",
+      titulo: "ORO 14KTS",
+      precio: "$7,700",
+      boton: "COTIZAR",
+    },
   ];
 
   const materialActivo =
-    materiales.find((m) => m.key === materialSeleccionado) || materiales[1];
+    materiales.find((m) => m.key === materialSeleccionado) ||
+    materiales[1];
 
   const imagenPath =
     numero.trim() === ""
@@ -133,6 +148,20 @@ function Simulador() {
       ? `/disenos/${numero}-silver.png`
       : `/disenos/${numero}-gold.png`;
 
+  const mensajeWhatsApp =
+    materialActivo.key === "ORO"
+      ? `Hola Strafalaria, quiero cotizar mi dije personalizado.
+
+Número: ${numero || "SIN ESPECIFICAR"}
+Material: ORO 14KTS
+
+¿Cuál es el tiempo de entrega y la forma de pago?`
+      : `Hola Strafalaria, estoy interesado en comprar el dije con el número "${numero || "SIN ESPECIFICAR"}".
+
+Material: ${materialActivo.titulo}
+
+¿Cuál es el tiempo de entrega y la forma de pago?`;
+
   return (
     <div className="w-full max-w-md mx-auto bg-black/40 backdrop-blur-xl rounded-3xl p-7 border border-white/10">
 
@@ -140,7 +169,6 @@ function Simulador() {
         PERSONALIZA TU DIJE
       </h2>
 
-      {/* INPUT CORREGIDO */}
       <input
         type="text"
         value={numero}
@@ -156,17 +184,13 @@ function Simulador() {
           border-[#00E676]
           rounded-2xl
           text-center
-
           text-xl md:text-2xl
           font-extrabold
-
           outline-none
           focus:border-[#00E5FF]
           transition-all
-
           placeholder:text-white/50
           placeholder:text-[11px] md:placeholder:text-[14px]
-
           tracking-[0.12em]
           leading-none
         "
@@ -181,12 +205,71 @@ function Simulador() {
         />
       </div>
 
+      <div className="flex flex-col gap-2 mt-4">
+
+        {materiales.map((material) => (
+          <button
+            key={material.key}
+            onClick={() => setMaterialSeleccionado(material.key)}
+            className={`
+              relative
+              rounded-xl
+              border
+              px-4
+              py-4
+              text-center
+              transition-all
+
+              ${
+                materialSeleccionado === material.key
+                  ? "border-[#D4AF37] bg-[#D4AF37]/10"
+                  : "border-white/10 bg-white/[0.02]"
+              }
+            `}
+          >
+            <div className="text-white uppercase text-sm font-semibold">
+              {material.titulo}
+            </div>
+
+            <div className="text-white/80 text-sm mt-1">
+              {material.precio}
+            </div>
+
+          </button>
+        ))}
+
+      </div>
+
+      <a
+        href={`https://wa.me/5215549614585?text=${encodeURIComponent(
+          mensajeWhatsApp
+        )}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="
+          mt-4
+          block
+          text-center
+          py-4
+          rounded-2xl
+          text-black
+          font-bold
+          text-xs uppercase
+          bg-gradient-to-r
+          from-[#00E5FF]
+          to-[#00E676]
+          hover:brightness-110
+        "
+      >
+        {materialActivo.boton}
+      </a>
+
     </div>
   );
 }
 
 /* =========================
-   HOME
+   HOME + FOOTER (ICONOS NUEVOS)
 ========================= */
 export default function Home() {
   const productos = [
@@ -241,7 +324,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* FOOTER */}
+      {/* FOOTER ICONOS SVG */}
       <footer className="border-t border-white/5 py-14 px-6 bg-black">
 
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between gap-12">
@@ -252,36 +335,41 @@ export default function Home() {
             <img
               src="/disenos/logo-strafalaria-white.svg"
               className="w-32 opacity-90"
-              alt="Strafalaria"
             />
 
-            <div className="flex gap-5">
+            <div className="flex gap-4">
 
               <a
                 href="https://www.instagram.com/strafalaria.mx/"
                 target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 flex items-center justify-center border border-white/10 rounded-full"
+                className="w-10 h-10 flex items-center justify-center rounded-full border border-white/10 hover:border-[#00E5FF] transition"
               >
-                IG
+                <img
+                  src="/icons/instagram.svg"
+                  className="w-5 h-5"
+                  alt="Instagram"
+                />
               </a>
 
               <a
                 href="https://www.facebook.com/Strafalaria.mx/"
                 target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 flex items-center justify-center border border-white/10 rounded-full"
+                className="w-10 h-10 flex items-center justify-center rounded-full border border-white/10 hover:border-[#00E5FF] transition"
               >
-                FB
+                <img
+                  src="/icons/facebook.svg"
+                  className="w-5 h-5"
+                  alt="Facebook"
+                />
               </a>
 
             </div>
           </div>
 
-          {/* RIGHT - FORM */}
-          <div className="w-full md:w-1/2 flex flex-col items-center md:items-end text-center md:text-right gap-4">
+          {/* RIGHT */}
+          <div className="w-full md:w-1/2 flex flex-col items-center md:items-end gap-4">
 
-            <p className="text-white/60 text-[11px] uppercase tracking-[0.18em] max-w-md">
+            <p className="text-white/60 text-[11px] uppercase tracking-[0.18em] max-w-md text-center md:text-right">
               Regístrate a nuestro newsletter y recibirás antes que nadie nuestras promociones y lanzamientos
             </p>
 
