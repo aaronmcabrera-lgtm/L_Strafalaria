@@ -75,7 +75,42 @@ function ProductCard({
     >
 
       {/* IMAGE */}
-      <div className="aspect-square p-4 bg-black/20">
+      <div className="aspect-square p-4 bg-black/20 relative">
+
+        {/* PERSONALIZABLE BADGE */}
+        <div
+          className="
+            absolute
+            top-4
+            left-4
+            z-10
+
+            px-4
+            py-1
+
+            rounded-full
+
+            bg-gradient-to-r
+            from-[#ff003c]
+            via-[#ff00b8]
+            to-[#ff0090]
+
+            text-white
+
+            text-[8px]
+            uppercase
+            tracking-[0.18em]
+            font-black
+            italic
+
+            shadow-[0_0_18px_rgba(255,0,120,0.55)]
+          "
+          style={{
+            fontFamily: "Anton, sans-serif",
+          }}
+        >
+          PERSONALIZABLE
+        </div>
 
         <img
           src={`/disenos/prod-${prod.id}.png`}
@@ -89,20 +124,38 @@ function ProductCard({
       <div className="px-4 pb-4 pt-2 flex flex-col gap-4">
 
         {/* PRODUCT NAME */}
-        <h3
-          className="
-            font-antonio
-            text-[30px]
-            md:text-[34px]
-            uppercase
-            text-center
-            tracking-[0.25em]
-            text-white
-            font-black
-          "
-        >
-          {prod.nombre}
-        </h3>
+        <div className="flex flex-col items-center">
+
+          <h3
+            className="
+              font-antonio
+              text-[30px]
+              md:text-[34px]
+              uppercase
+              text-center
+              tracking-[0.25em]
+              text-white
+              font-black
+            "
+          >
+            {prod.nombre}
+          </h3>
+
+          {/* CUSTOM TEXT */}
+          <p
+            className="
+              mt-1
+              text-[10px]
+              uppercase
+              tracking-[0.22em]
+              text-white/55
+              text-center
+            "
+          >
+            Tu número • Tu equipo • Tu estilo
+          </p>
+
+        </div>
 
         {/* MATERIALS */}
         <div className="flex flex-col gap-2">
@@ -453,8 +506,8 @@ function Simulador() {
       {/* CTA */}
       <a
         href={`https://wa.me/5215549614585?text=${encodeURIComponent(
-          mensajeWhatsApp
-        )}`}
+            mensajeWhatsApp
+          )}`}
         target="_blank"
         className="
           mt-4
@@ -588,11 +641,81 @@ export default function Home() {
               tracking-[0.20em]
               font-black
               text-white
-              mb-10
+              mb-6
             "
           >
             MÁS QUE JOYAS
           </h2>
+
+          {/* CUSTOM BANNER */}
+          <div
+            className="
+              relative
+              mb-12
+              mx-auto
+              max-w-4xl
+              overflow-hidden
+              rounded-[22px]
+
+              bg-gradient-to-r
+              from-[#ff003c]
+              via-[#ff00b8]
+              to-[#ff0090]
+
+              px-6
+              py-5
+
+              shadow-[0_0_45px_rgba(255,0,140,0.45)]
+            "
+          >
+
+            {/* GLOW */}
+            <div
+              className="
+                absolute
+                inset-0
+                bg-white/10
+              "
+            />
+
+            <div className="relative z-10">
+
+              <div
+                className="
+                  text-white
+                  uppercase
+                  text-[22px]
+                  md:text-[34px]
+                  leading-none
+                  tracking-[0.04em]
+                  font-black
+                  italic
+                "
+                style={{
+                  fontFamily: "Anton, sans-serif",
+                }}
+              >
+                DISEÑOS 100% PERSONALIZABLES
+              </div>
+
+              <p
+                className="
+                  mt-1
+                  text-white
+                  text-[12px]
+                  md:text-[18px]
+                  font-bold
+                  italic
+                  opacity-95
+                "
+              >
+                Crea tu pieza con tu número,
+                equipo, colores y estilo
+              </p>
+
+            </div>
+
+          </div>
 
           <div
             className="
