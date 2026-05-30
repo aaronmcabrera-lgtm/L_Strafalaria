@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 
-/* =========================
-   PRODUCT CARD
-========================= */
+/* ==========================================================================
+   PRODUCT CARD Component
+   ========================================================================== */
 function ProductCard({
   prod,
 }: {
@@ -73,10 +73,8 @@ function ProductCard({
         backdrop-blur-xl
       "
     >
-
       {/* IMAGE */}
       <div className="aspect-square p-4 bg-black/20 relative">
-
         {/* PERSONALIZABLE BADGE */}
         <div
           className="
@@ -84,25 +82,19 @@ function ProductCard({
             top-4
             left-4
             z-10
-
             px-4
             py-1
-
             rounded-full
-
             bg-gradient-to-r
             from-[#ff003c]
             via-[#ff00b8]
             to-[#ff0090]
-
             text-white
-
             text-[8px]
             uppercase
             tracking-[0.18em]
             font-black
             italic
-
             shadow-[0_0_18px_rgba(255,0,120,0.55)]
           "
           style={{
@@ -117,15 +109,12 @@ function ProductCard({
           alt={prod.nombre}
           className="w-full h-full object-contain"
         />
-
       </div>
 
       {/* CONTENT */}
       <div className="px-4 pb-4 pt-2 flex flex-col gap-4">
-
         {/* PRODUCT NAME */}
         <div className="flex flex-col items-center">
-
           <h3
             className="
               font-antonio
@@ -154,14 +143,11 @@ function ProductCard({
           >
             Tu número • Tu equipo • Tu estilo
           </p>
-
         </div>
 
         {/* MATERIALS */}
         <div className="flex flex-col gap-2">
-
           {materiales.map((m) => (
-
             <button
               key={m.key}
               onClick={() =>
@@ -179,7 +165,6 @@ function ProductCard({
                 items-center
                 text-center
                 transition
-
                 ${
                   materialSeleccionado === m.key
                     ? "border-[#D4AF37] bg-[#D4AF37]/10"
@@ -187,7 +172,6 @@ function ProductCard({
                 }
               `}
             >
-
               {/* BADGE */}
               {m.destacado && (
                 <div
@@ -216,13 +200,11 @@ function ProductCard({
                   font-antonio
                   uppercase
                   leading-none
-
                   ${
                     m.key === "ORO"
                       ? "text-[17px] tracking-[0.10em]"
                       : "text-[14px] tracking-[0.12em]"
                   }
-
                   ${
                     materialSeleccionado === m.key
                       ? "text-[#D4AF37]"
@@ -260,7 +242,6 @@ function ProductCard({
                   min-h-[22px]
                   flex
                   items-center
-
                   ${
                     materialSeleccionado === m.key
                       ? "text-[#D4AF37]"
@@ -270,11 +251,8 @@ function ProductCard({
               >
                 {m.precio}
               </div>
-
             </button>
-
           ))}
-
         </div>
 
         {/* CTA */}
@@ -300,21 +278,18 @@ function ProductCard({
         >
           {materialActivo.boton}
         </a>
-
       </div>
-
     </div>
   );
 }
 
-/* =========================
-   SIMULADOR
-========================= */
+/* ==========================================================================
+   SIMULADOR Component
+   ========================================================================== */
 function Simulador() {
-
+  // Ajuste Estratégico: Inicializa vacío para forzar la visualización de la leyenda
   const [numero, setNumero] = useState("");
-  const [materialSeleccionado, setMaterialSeleccionado] =
-    useState("PLATA");
+  const [materialSeleccionado, setMaterialSeleccionado] = useState("BAÑO ORO");
 
   const materiales = [
     {
@@ -343,17 +318,18 @@ function Simulador() {
       (m) => m.key === materialSeleccionado
     ) || materiales[1];
 
+  // Si está vacío, toma el "18" como render predeterminado de fondo
+  const numeroVisual = numero.trim() === "" ? "18" : numero;
+
   const imagenPath =
-    numero.trim() === ""
-      ? "/disenos/TU-NUMERO.png"
-      : materialSeleccionado === "PLATA"
-        ? `/disenos/${numero}-silver.png`
-        : `/disenos/${numero}-gold.png`;
+    materialSeleccionado === "PLATA"
+      ? `/disenos/${numeroVisual}-silver.png`
+      : `/disenos/${numeroVisual}-gold.png`;
 
   const mensajeWhatsApp =
     materialActivo.key === "ORO"
       ? `Hola Strafalaria, quiero cotizar mi dije personalizado.`
-      : `Hola Strafalaria, estoy interesado en comprar el dije con el número "${numero || "SIN ESPECIFICAR"}".`;
+      : `Hola Strafalaria, estoy interesado en comprar el dije con el número "${numero || "18"}".`;
 
   return (
     <div
@@ -369,7 +345,6 @@ function Simulador() {
         border-white/10
       "
     >
-
       <h2
         className="
           text-center
@@ -383,15 +358,17 @@ function Simulador() {
         PERSONALIZA TU DIJE
       </h2>
 
+      {/* INPUT CORREGIDO: Muestra perfectamente la leyenda completa */}
       <input
         type="text"
         value={numero}
-        placeholder="ESCRIBE TU NÚMERO"
+        placeholder="ESCRIBE AQUÍ TU NÚMERO"
         onChange={(e) =>
           setNumero(e.target.value.slice(0, 3))
         }
         className="
           font-antonio
+          w-full
           px-4
           py-3
           bg-black/70
@@ -405,10 +382,14 @@ function Simulador() {
           font-extrabold
           placeholder:text-[12px]
           md:placeholder:text-[14px]
+          placeholder:text-white/60
+          placeholder:font-bold
+          placeholder:uppercase
+          placeholder:tracking-wider
         "
       />
 
-      {/* PREVIEW */}
+      {/* PREVIEW CONTAINER (Compacto en un 20%) */}
       <div
         className="
           mt-4
@@ -417,21 +398,20 @@ function Simulador() {
           rounded-2xl
           flex
           justify-center
+          items-center
+          min-h-[176px]
         "
       >
-
         <img
           src={imagenPath}
-          className="w-[260px]"
+          className="w-[160px] h-auto object-contain"
+          alt="Visualización del dije"
         />
-
       </div>
 
       {/* MATERIALS */}
       <div className="flex flex-col gap-2 mt-4">
-
         {materiales.map((material) => (
-
           <button
             key={material.key}
             onClick={() =>
@@ -445,7 +425,6 @@ function Simulador() {
               py-4
               text-center
               transition
-
               ${
                 materialSeleccionado === material.key
                   ? "border-[#D4AF37] bg-[#D4AF37]/10"
@@ -453,7 +432,6 @@ function Simulador() {
               }
             `}
           >
-
             <div
               className="
                 text-white
@@ -474,7 +452,6 @@ function Simulador() {
                 mt-1
               "
             >
-
               <span
                 className="
                   text-[9px]
@@ -494,21 +471,25 @@ function Simulador() {
               >
                 {material.precio}
               </span>
-
             </div>
-
           </button>
-
         ))}
+      </div>
 
+      {/* LEYENDA ADICIONAL DE LA CADENA */}
+      <div className="mt-4 px-2 text-center">
+        <p className="text-[10px] text-white/60 font-bold uppercase tracking-[0.15em] leading-relaxed">
+          TODOS NUESTROS DIJES EN BAÑO DE ORO Y PLATA INCLUYEN CADENA DE 50CM
+        </p>
       </div>
 
       {/* CTA */}
       <a
         href={`https://wa.me/5215549614585?text=${encodeURIComponent(
-            mensajeWhatsApp
-          )}`}
+          mensajeWhatsApp
+        )}`}
         target="_blank"
+        rel="noopener noreferrer"
         className="
           mt-4
           block
@@ -526,52 +507,24 @@ function Simulador() {
       >
         COTIZA EL TUYO
       </a>
-
     </div>
   );
 }
 
-/* =========================
-   HOME
-========================= */
+/* ==========================================================================
+   HOME PAGE (Main Interface Component)
+   ========================================================================== */
 export default function Home() {
-
   const productos = [
-    {
-      id: 1,
-      nombre: "CREW",
-      plata: "$2,400",
-      bano: "$2,700",
-    },
-    {
-      id: 2,
-      nombre: "ICONIC",
-      plata: "$2,400",
-      bano: "$2,700",
-    },
-    {
-      id: 3,
-      nombre: "HONOR",
-      plata: "$2,400",
-      bano: "$2,700",
-    },
-    {
-      id: 4,
-      nombre: "ROSTER",
-      plata: "$2,400",
-      bano: "$2,700",
-    },
-    {
-      id: 5,
-      nombre: "ELITE",
-      plata: "$2,800",
-      bano: "$3,200",
-    },
+    { id: 1, nombre: "CREW", plata: "$2,400", bano: "$2,700" },
+    { id: 2, nombre: "ICONIC", plata: "$2,400", bano: "$2,700" },
+    { id: 3, nombre: "HONOR", plata: "$2,400", bano: "$2,700" },
+    { id: 4, nombre: "ROSTER", plata: "$2,400", bano: "$2,700" },
+    { id: 5, nombre: "ELITE", plata: "$3,200", bano: "$3,900" },
   ];
 
   return (
-    <main className="bg-black text-white">
-
+    <main className="bg-black text-white min-h-screen">
       {/* HERO */}
       <section
         className="
@@ -590,14 +543,13 @@ export default function Home() {
             "url('/disenos/fondo-hero.jpg')",
         }}
       >
-
         <div className="absolute inset-0 bg-black/70" />
 
-        <div className="relative z-10 text-center">
-
+        <div className="relative z-10 text-center w-full max-w-4xl">
           <img
             src="/disenos/logo-strafalaria-white.svg"
             className="w-40 mx-auto mb-6"
+            alt="Strafalaria Logo"
           />
 
           <h1
@@ -607,17 +559,16 @@ export default function Home() {
               uppercase
               font-bold
               leading-tight
+              mb-8
             "
           >
             CONVIERTE TU NÚMERO EN JOYA
           </h1>
 
-          <div className="mt-10">
+          <div>
             <Simulador />
           </div>
-
         </div>
-
       </section>
 
       {/* PRODUCTS */}
@@ -629,9 +580,7 @@ export default function Home() {
           border-white/5
         "
       >
-
         <div className="max-w-7xl mx-auto text-center">
-
           <h2
             className="
               font-antonio
@@ -656,19 +605,15 @@ export default function Home() {
               max-w-4xl
               overflow-hidden
               rounded-[22px]
-
               bg-gradient-to-r
               from-[#ff003c]
               via-[#ff00b8]
               to-[#ff0090]
-
               px-6
               py-5
-
               shadow-[0_0_45px_rgba(255,0,140,0.45)]
             "
           >
-
             {/* GLOW */}
             <div
               className="
@@ -679,7 +624,6 @@ export default function Home() {
             />
 
             <div className="relative z-10">
-
               <div
                 className="
                   text-white
@@ -709,12 +653,9 @@ export default function Home() {
                   opacity-95
                 "
               >
-                Crea tu pieza con tu número,
-                equipo, colores y estilo
+                Crea tu pieza con tu número, equipo, colores y estilo
               </p>
-
             </div>
-
           </div>
 
           <div
@@ -726,20 +667,14 @@ export default function Home() {
               gap-5
             "
           >
-
             {productos.map((p) => (
-
               <ProductCard
                 key={p.id}
                 prod={p}
               />
-
             ))}
-
           </div>
-
         </div>
-
       </section>
 
       {/* FOOTER */}
@@ -752,7 +687,6 @@ export default function Home() {
           bg-black
         "
       >
-
         <div
           className="
             max-w-6xl
@@ -764,7 +698,6 @@ export default function Home() {
             gap-12
           "
         >
-
           {/* LEFT */}
           <div
             className="
@@ -775,36 +708,37 @@ export default function Home() {
               gap-6
             "
           >
-
             <img
               src="/disenos/logo-strafalaria-white.svg"
               className="w-32 opacity-90"
+              alt="Strafalaria Logo Footer"
             />
 
             <div className="flex gap-5">
-
               <a
                 href="https://www.instagram.com/strafalaria.mx/"
                 target="_blank"
+                rel="noopener noreferrer"
               >
                 <img
                   src="/icons/instagram.svg"
                   className="w-8 h-8"
+                  alt="Instagram Icon"
                 />
               </a>
 
               <a
                 href="https://www.facebook.com/Strafalaria.mx/"
                 target="_blank"
+                rel="noopener noreferrer"
               >
                 <img
                   src="/icons/facebook.svg"
                   className="w-8 h-8"
+                  alt="Facebook Icon"
                 />
               </a>
-
             </div>
-
           </div>
 
           {/* RIGHT */}
@@ -819,7 +753,6 @@ export default function Home() {
               gap-4
             "
           >
-
             <p
               className="
                 text-white/60
@@ -846,7 +779,6 @@ export default function Home() {
                 max-w-md
               "
             >
-
               <input
                 name="email"
                 type="email"
@@ -880,11 +812,8 @@ export default function Home() {
               >
                 Unirme
               </button>
-
             </form>
-
           </div>
-
         </div>
 
         <p
@@ -895,11 +824,9 @@ export default function Home() {
             mt-10
           "
         >
-          Diseño,Strafalaria México © 2026, Todos los derechos reservados.
+          Diseño, Strafalaria México © 2026, Todos los derechos reservados.
         </p>
-
       </footer>
-
     </main>
   );
 }
