@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Script from "next/script";
 
 /* ==========================================================================
    PRODUCT CARD Component
@@ -35,7 +36,7 @@ function ProductCard({
     {
       key: "ORO",
       titulo: "ORO 14KTS",
-      precio: "",
+      precio: "COTIZAR",
       boton: "COTIZA EL TUYO",
       destacado: prod.nombre === "ELITE",
     },
@@ -57,8 +58,8 @@ function ProductCard({
 
   const mensajeWhatsApp =
     materialActivo.key === "ORO"
-      ? `Hola Strafalaria, estoy interesado en comprar el Modelo ${prod.nombre}, me puedes cotizar?`
-      : `Hola Strafalaria, estoy interesado en comprar el Modelo ${prod.nombre}, en material ${materialActivo.titulo}. ¿Cuál es el tiempo de entrega y la forma de pago?`;
+      ? `Hola Strafalaria, estoy interesado en comprar el Modelo ${prod.nombre} en ORO 14KTS, ¿me puedes dar una cotización personalizada?`
+      : `Hola Strafalaria, estoy interesado en comprar el Modelo ${prod.nombre} en material ${materialActivo.titulo}. ¿Cuál es el tiempo de entrega y la forma de pago?`;
 
   return (
     <div
@@ -256,13 +257,24 @@ function ProductCard({
         </div>
 
         {/* CTA */}
-        <a
-          href={`https://wa.me/5215549614585?text=${encodeURIComponent(
-            mensajeWhatsApp
-          )}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="
+ <a
+  href={`https://wa.me/5215549614585?text=${encodeURIComponent(
+    mensajeWhatsApp
+  )}`}
+  target="_blank"
+  rel="noopener noreferrer"
+  onClick={() => {
+    if (
+      typeof window !== "undefined" &&
+      (window as any).fbq
+    ) {
+      (window as any).fbq("track", "Lead", {
+        product_name: prod.nombre,
+        material: materialActivo.titulo,
+      });
+    }
+  }}
+  className="
             block
             text-center
             py-3
@@ -287,226 +299,245 @@ function ProductCard({
    SIMULADOR Component
    ========================================================================== */
 function Simulador() {
-  // Ajuste Estratégico: Inicializa vacío para forzar la visualización de la leyenda
   const [numero, setNumero] = useState("");
   const [materialSeleccionado, setMaterialSeleccionado] = useState("BAÑO ORO");
+  const [cargandoPago, setCargandoPago] = useState(false);
 
   const materiales = [
     {
       key: "BAÑO ORO",
       titulo: "BAÑO DE ORO",
       precio: "$1,200",
-      boton: "COMPRAR AHORA",
+      precioNumerico: 1200,
+      sublabel: "DESDE",
+      tipo: "pago_directo",
     },
     {
       key: "PLATA",
       titulo: "PLATA",
       precio: "$990",
-      boton: "COMPRAR AHORA",
-      destacado: true,
+      precioNumerico: 990,
+      sublabel: "DESDE",
+      tipo: "pago_directo",
     },
     {
       key: "ORO",
-      titulo: "ORO 14KTS",
+      titulo: "Oro 14kts",
       precio: "$7,700",
-      boton: "COTIZAR",
+      precioNumerico: 7700,
+      sublabel: "DESDE",
+      tipo: "whatsapp",
     },
   ];
 
-  const materialActivo =
-    materiales.find(
-      (m) => m.key === materialSeleccionado
-    ) || materiales[1];
-
-  // Si está vacío, toma el "18" como render predeterminado de fondo
-  const numeroVisual = numero.trim() === "" ? "18" : numero;
+  const numeroLimpio = numero.trim().replace(/^0+/, "");
+  const numeroVisual = numeroLimpio === "" ? "18" : numeroLimpio;
 
   const imagenPath =
     materialSeleccionado === "PLATA"
       ? `/disenos/${numeroVisual}-silver.png`
       : `/disenos/${numeroVisual}-gold.png`;
 
-  const mensajeWhatsApp =
-    materialActivo.key === "ORO"
-      ? `Hola Strafalaria, quiero cotizar mi dije personalizado.`
-      : `Hola Strafalaria, estoy interesado en comprar el dije con el número "${numero || "18"}".`;
+  const handleActionClick = async (material: typeof materiales[0]) => {
+    setMaterialSeleccionado(material.key);
+if (material.tipo === "whatsapp") {
+
+  if (
+    typeof window !== "undefined" &&
+    (window as any).fbq
+  ) {
+    (window as any).fbq("track", "Lead", {
+      numero: numeroVisual,
+      material: "ORO 14KTS",
+    });
+  }
+
+  const mensaje = `Hola Strafalaria, quiero cotizar un dije personalizado con el número "${numeroVisual}" en ORO 14KTS.`;
+
+  window.open(
+    `https://wa.me/5215549614585?text=${encodeURIComponent(mensaje)}`,
+    "_blank"
+  );
+
+  return;
+}
+    setCargandoPago(true);
+    try {
+      const response = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          numero: numeroVisual,
+          material: material.titulo,
+          precio: material.precioNumerico,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Error en la respuesta del servidor");
+      }
+
+      const data = await response.json();
+
+      // CORRECCIÓN CLAVE: Redirigimos usando window.location con la propiedad initPoint que envía el backend
+      if (data.initPoint) {
+        window.location.assign(data.initPoint);
+      } else {
+        alert("No se pudo obtener el enlace de pago de Mercado Pago.");
+      }
+    } catch (error) {
+      console.error("Error al procesar el pago:", error);
+      alert("Hubo un error al conectar con la pasarela.");
+    } finally {
+      setCargandoPago(false);
+    }
+  };
 
   return (
-    <div
-      className="
-        w-full
-        max-w-md
-        mx-auto
-        bg-black/40
-        backdrop-blur-xl
-        rounded-3xl
-        p-7
-        border
-        border-white/10
-      "
-    >
-      <h2
-        className="
-          text-center
-          text-white
-          text-[26px]
-          uppercase
-          font-bold
-          mb-4
-        "
-      >
-        PERSONALIZA TU DIJE
+    <div className="w-full max-w-md mx-auto bg-black/40 backdrop-blur-xl rounded-3xl p-6 border border-white/10">
+      <h2 className="text-center text-white text-[20px] tracking-wide uppercase font-bold mb-4">
+        Simulador Strafalaria
       </h2>
 
-      {/* INPUT CORREGIDO: Muestra perfectamente la leyenda completa */}
+      {/* INPUT */}
       <input
         type="text"
         value={numero}
         placeholder="ESCRIBE AQUÍ TU NÚMERO"
-        onChange={(e) =>
-          setNumero(e.target.value.slice(0, 3))
-        }
-        className="
-          font-antonio
-          w-full
-          px-4
-          py-3
-          bg-black/70
-          text-white
-          border-2
-          border-[#00E676]
-          rounded-2xl
-          text-center
-          text-xl
-          md:text-2xl
-          font-extrabold
-          placeholder:text-[12px]
-          md:placeholder:text-[14px]
-          placeholder:text-white/60
-          placeholder:font-bold
-          placeholder:uppercase
-          placeholder:tracking-wider
-        "
+        onChange={(e) => {
+          const val = e.target.value.replace(/\D/g, "");
+          setNumero(val.slice(0, 3));
+        }}
+        className="font-antonio w-full px-4 py-3 bg-black/70 text-white border border-[#00E676]/60 rounded-xl text-center text-lg font-extrabold placeholder:text-[11px] placeholder:text-white/40 placeholder:tracking-widest"
       />
 
-      {/* PREVIEW CONTAINER (Compacto en un 20%) */}
-      <div
-        className="
-          mt-4
-          bg-black/20
-          p-4
-          rounded-2xl
-          flex
-          justify-center
-          items-center
-          min-h-[176px]
-        "
-      >
+      {/* PREVIEW CONTAINER */}
+      <div className="mt-4 bg-black/20 p-2 rounded-2xl flex justify-center items-center min-h-[160px]">
         <img
           src={imagenPath}
-          className="w-[160px] h-auto object-contain"
-          alt="Visualización del dije"
+          className="w-[140px] h-auto object-contain"
+          alt={`Dije número ${numeroVisual}`}
         />
       </div>
 
-      {/* MATERIALS */}
-      <div className="flex flex-col gap-2 mt-4">
-        {materiales.map((material) => (
-          <button
-            key={material.key}
-            onClick={() =>
-              setMaterialSeleccionado(material.key)
-            }
-            className={`
-              relative
-              rounded-xl
-              border
-              px-4
-              py-4
-              text-center
-              transition
-              ${
-                materialSeleccionado === material.key
-                  ? "border-[#D4AF37] bg-[#D4AF37]/10"
-                  : "border-white/10 bg-white/[0.02]"
-              }
-            `}
-          >
+      {/* LISTA DE MATERIALES */}
+      <div className="flex flex-col gap-3 mt-4">
+        {materiales.map((material) => {
+          const isSelected = materialSeleccionado === material.key;
+          return (
             <div
-              className="
-                text-white
-                uppercase
-                text-sm
-                font-semibold
-              "
+              key={material.key}
+              onClick={() => setMaterialSeleccionado(material.key)}
+              className={`flex items-center justify-between rounded-xl border p-3 transition cursor-pointer ${
+                isSelected
+                  ? "border-[#D4AF37] bg-[#D4AF37]/5"
+                  : "border-white/10 bg-white/[0.01]"
+              }`}
             >
-              {material.titulo}
-            </div>
+              <div className="flex items-center gap-3">
+                <div className="relative flex items-center justify-center">
+                  <input
+                    type="radio"
+                    checked={isSelected}
+                    onChange={() => setMaterialSeleccionado(material.key)}
+                    className="sr-only"
+                  />
+                  <div
+                    className={`w-4 h-4 rounded-full border flex items-center justify-center transition ${
+                      isSelected ? "border-[#D4AF37]" : "border-white/30"
+                    }`}
+                  >
+                    {isSelected && (
+                      <div className="w-2 h-2 rounded-full bg-[#D4AF37]" />
+                    )}
+                  </div>
+                </div>
 
-            <div
-              className="
-                flex
-                items-end
-                justify-center
-                gap-2
-                mt-1
-              "
-            >
-              <span
-                className="
-                  text-[9px]
-                  uppercase
-                  text-white/40
-                "
-              >
-                DESDE
-              </span>
+                <div
+                  className={`w-9 h-9 rounded-full shadow-inner ${
+                    material.key === "PLATA"
+                      ? "bg-gradient-to-tr from-zinc-400 to-zinc-100"
+                      : "bg-gradient-to-tr from-amber-600 to-amber-300"
+                  }`}
+                />
 
-              <span
-                className="
-                  text-[24px]
-                  font-extrabold
-                  text-white
-                "
-              >
-                {material.precio}
-              </span>
+                <div className="flex flex-col text-left">
+                  <span className="text-[11px] font-bold text-white uppercase tracking-wider">
+                    {material.titulo}
+                  </span>
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-[9px] text-white/30 font-mono">
+                      {material.sublabel}
+                    </span>
+                    <span className="text-[18px] font-extrabold text-white leading-tight">
+                      {material.precio}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="border-l border-white/10 pl-4 min-w-[95px] text-center">
+                {material.tipo === "pago_directo" ? (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleActionClick(material);
+                    }}
+                    disabled={cargandoPago}
+                    className={`text-[10px] font-black uppercase tracking-wider transition ${
+                      material.key === "PLATA"
+                        ? "text-white/25 hover:text-white/50"
+                        : "text-white hover:text-[#D4AF37]"
+                    }`}
+                  >
+                    {cargandoPago && isSelected ? "Procesando..." : "APARTAR CON $300"}
+                  </button>
+                ) : (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleActionClick(material);
+                    }}
+                    className="flex flex-col items-center justify-center mx-auto"
+                  >
+                    <img 
+                      src="/icons/whatsapp.svg" 
+                      alt="WhatsApp" 
+                      className="w-11 h-11 aspect-square hover:scale-120 transition object-contain"
+                    />
+                    <span className="text-[11px] text-white/50 uppercase mt-0.5 tracking-tighter">
+                      cotiza el tuyo
+                    </span>
+                  </button>
+                )}
+              </div>
             </div>
-          </button>
-        ))}
+          );
+        })}
       </div>
 
-      {/* LEYENDA ADICIONAL DE LA CADENA */}
-      <div className="mt-4 px-2 text-center">
-        <p className="text-[10px] text-white/60 font-bold uppercase tracking-[0.15em] leading-relaxed">
-          TODOS NUESTROS DIJES EN BAÑO DE ORO Y PLATA INCLUYEN CADENA DE 50CM
-        </p>
-      </div>
+      <p className="text-[9px] text-white/60 text-center uppercase tracking-widest mt-4">
+        TODOS NUESTROS DIJES EN BAÑO DE ORO Y PLATA INCLUYEN UNA CADENA DE 50CM. Y TIENEN ENVÍO GRÁTIS EN EL AREA METROPOLITANA
+      </p>
 
-      {/* CTA */}
-      <a
-        href={`https://wa.me/5215549614585?text=${encodeURIComponent(
-          mensajeWhatsApp
-        )}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="
-          mt-4
-          block
-          text-center
-          py-4
-          rounded-2xl
-          text-black
-          font-bold
-          text-xs
-          uppercase
-          bg-gradient-to-r
-          from-[#00E5FF]
-          to-[#00E676]
-        "
-      >
-        COTIZA EL TUYO
-      </a>
+      {/* SECCIÓN MERCADO PAGO PREMIUM CORREGIDA */}
+      <div className="mt-5 flex flex-col items-center gap-2">
+        <div className="w-full bg-gradient-to-r from-[#00E5FF] to-[#00E676] rounded-full py-1 px-6 flex items-center justify-center gap-3 shadow-[0_4px_15px_rgba(0,229,255,0.05)]">
+          <span className="text-[14px] text-black font-extrabold uppercase tracking-[0.05em]">
+            PAGAR CON MERCADO PAGO
+          </span>
+        </div>
+        
+        <div className="text-[12px] text-white/50 tracking-widest uppercase flex items-center gap-1 mt-4">
+          🛡️ Seguridad y Confianza
+        </div>
+        
+        <div className="flex items-center justify-center gap-4 transition mt-1">
+          <img src="/icons/visa.svg" alt="Visa" className="h-11 w-auto" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+          <img src="/icons/mastercard.svg" alt="Mastercard" className="h-11 w-auto" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+          <img src="/icons/amex.svg" alt="Amex" className="h-11 w-auto" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+        </div>
+      </div>
     </div>
   );
 }
@@ -525,6 +556,11 @@ export default function Home() {
 
   return (
     <main className="bg-black text-white min-h-screen">
+      <Script
+        src="https://sdk.mercadopago.com/js/v2"
+        strategy="lazyOnload"
+      />
+
       {/* HERO */}
       <section
         className="
@@ -539,8 +575,7 @@ export default function Home() {
           bg-center
         "
         style={{
-          backgroundImage:
-            "url('/disenos/fondo-hero.jpg')",
+          backgroundImage: "url('/disenos/fondo-hero.jpg')",
         }}
       >
         <div className="absolute inset-0 bg-black/70" />
@@ -614,14 +649,7 @@ export default function Home() {
               shadow-[0_0_45px_rgba(255,0,140,0.45)]
             "
           >
-            {/* GLOW */}
-            <div
-              className="
-                absolute
-                inset-0
-                bg-white/10
-              "
-            />
+            <div className="absolute inset-0 bg-white/10" />
 
             <div className="relative z-10">
               <div
@@ -668,12 +696,41 @@ export default function Home() {
             "
           >
             {productos.map((p) => (
-              <ProductCard
-                key={p.id}
-                prod={p}
-              />
+              <ProductCard key={p.id} prod={p} />
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* FORMAS DE PAGO */}
+      <section className="py-16 px-6 border-t border-white/5">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2
+            className="
+              font-antonio
+              text-[34px]
+              md:text-[48px]
+              uppercase
+              tracking-[0.15em]
+              font-black
+              mb-8
+            "
+          >
+            FORMAS DE PAGO
+          </h2>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="rounded-2xl border border-white/10 p-6">💳 Visa</div>
+            <div className="rounded-2xl border border-white/10 p-6">💳 Mastercard</div>
+            <div className="rounded-2xl border border-white/10 p-6">💳 Amex</div>
+            <div className="rounded-2xl border border-white/10 p-6">🏦 SPEI</div>
+            <div className="rounded-2xl border border-white/10 p-6">🟦 Mercado Pago</div>
+            <div className="rounded-2xl border border-white/10 p-6">🏪 OXXO</div>
+          </div>
+
+          <p className="mt-8 text-white/60 text-sm max-w-2xl mx-auto">
+            Todos los pagos son procesados de forma segura mediante Mercado Pago.
+          </p>
         </div>
       </section>
 
