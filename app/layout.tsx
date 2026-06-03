@@ -32,6 +32,10 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
+        <meta
+  name="facebook-domain-verification"
+  content="dahu7jcer4ahna9l3pg4ikaej3r7vd"
+/>
 
         {/* META PIXEL */}
         <Script id="facebook-pixel" strategy="afterInteractive">
