@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Script from "next/script";
-
+import TrustSection from "./components/TrustSection";
 /* ==========================================================================
    PRODUCT CARD Component
    ========================================================================== */
@@ -535,7 +535,7 @@ if (material.tipo === "whatsapp") {
         <div className="flex items-center justify-center gap-4 transition mt-1">
           <img src="/icons/visa.svg" alt="Visa" className="h-11 w-auto" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
           <img src="/icons/mastercard.svg" alt="Mastercard" className="h-11 w-auto" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-          <img src="/icons/amex.svg" alt="Amex" className="h-11 w-auto" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+          <img src="/icons/mercado-pago.svg" alt="mercado-pago" className="h-11 w-auto" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
         </div>
       </div>
     </div>
@@ -547,9 +547,9 @@ if (material.tipo === "whatsapp") {
    ========================================================================== */
 export default function Home() {
   const productos = [
-    { id: 1, nombre: "CREW", plata: "$2,400", bano: "$2,700" },
+    { id: 1, nombre: "CREW", plata: "$2,900", bano: "$3,200" },
     { id: 2, nombre: "ICONIC", plata: "$2,400", bano: "$2,700" },
-    { id: 3, nombre: "HONOR", plata: "$2,400", bano: "$2,700" },
+    { id: 3, nombre: "HONOR", plata: "$3,600", bano: "$3,800" },
     { id: 4, nombre: "ROSTER", plata: "$2,400", bano: "$2,700" },
     { id: 5, nombre: "ELITE", plata: "$3,200", bano: "$3,900" },
   ];
@@ -701,38 +701,64 @@ export default function Home() {
           </div>
         </div>
       </section>
+      <TrustSection />
 
       {/* FORMAS DE PAGO */}
-      <section className="py-16 px-6 border-t border-white/5">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2
-            className="
-              font-antonio
-              text-[34px]
-              md:text-[48px]
-              uppercase
-              tracking-[0.15em]
-              font-black
-              mb-8
-            "
-          >
-            FORMAS DE PAGO
-          </h2>
+      <div className="grid grid-cols-3 gap-4 max-w-4xl mx-auto">
+  {/* VISA */}
+  <div
+    className="
+      rounded-2xl
+      border border-white/10
+      bg-white/[0.02]
+      backdrop-blur-xl
+      h-[120px]
+      flex items-center justify-center
+    "
+  >
+    <img
+      src="/icons/visa.svg"
+      alt="Visa"
+      className="h-10 w-auto"
+    />
+  </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            <div className="rounded-2xl border border-white/10 p-6">💳 Visa</div>
-            <div className="rounded-2xl border border-white/10 p-6">💳 Mastercard</div>
-            <div className="rounded-2xl border border-white/10 p-6">💳 Amex</div>
-            <div className="rounded-2xl border border-white/10 p-6">🏦 SPEI</div>
-            <div className="rounded-2xl border border-white/10 p-6">🟦 Mercado Pago</div>
-            <div className="rounded-2xl border border-white/10 p-6">🏪 OXXO</div>
-          </div>
+  {/* MASTERCARD */}
+  <div
+    className="
+      rounded-2xl
+      border border-white/10
+      bg-white/[0.02]
+      backdrop-blur-xl
+      h-[120px]
+      flex items-center justify-center
+    "
+  >
+    <img
+      src="/icons/mastercard.svg"
+      alt="Mastercard"
+      className="h-12 w-auto"
+    />
+  </div>
 
-          <p className="mt-8 text-white/60 text-sm max-w-2xl mx-auto">
-            Todos los pagos son procesados de forma segura mediante Mercado Pago.
-          </p>
-        </div>
-      </section>
+  {/* MERCADO PAGO */}
+  <div
+    className="
+      rounded-2xl
+      border border-white/10
+      bg-white/[0.02]
+      backdrop-blur-xl
+      h-[120px]
+      flex items-center justify-center
+    "
+  >
+    <img
+      src="/icons/mercado-pago.svg"
+      alt="Mercado Pago"
+      className="h-10 w-auto"
+    />
+  </div>
+</div>
 
       {/* FOOTER */}
       <footer
