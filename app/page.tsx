@@ -3,6 +3,9 @@
 import { useState } from "react";
 import Script from "next/script";
 import TrustSection from "./components/TrustSection";
+import TestimoniosSection from "./components/TestimoniosSection";
+import ScrollMarquee from "./components/ScrollMarquee";
+
 /* ==========================================================================
    PRODUCT CARD Component
    ========================================================================== */
@@ -257,24 +260,24 @@ function ProductCard({
         </div>
 
         {/* CTA */}
- <a
-  href={`https://wa.me/5215549614585?text=${encodeURIComponent(
-    mensajeWhatsApp
-  )}`}
-  target="_blank"
-  rel="noopener noreferrer"
-  onClick={() => {
-    if (
-      typeof window !== "undefined" &&
-      (window as any).fbq
-    ) {
-      (window as any).fbq("track", "Lead", {
-        product_name: prod.nombre,
-        material: materialActivo.titulo,
-      });
-    }
-  }}
-  className="
+        <a
+          href={`https://wa.me/5215549614585?text=${encodeURIComponent(
+            mensajeWhatsApp
+          )}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={() => {
+            if (
+              typeof window !== "undefined" &&
+              (window as any).fbq
+            ) {
+              (window as any).fbq("track", "Lead", {
+                product_name: prod.nombre,
+                material: materialActivo.titulo,
+              });
+            }
+          }}
+          className="
             block
             text-center
             py-3
@@ -340,27 +343,26 @@ function Simulador() {
 
   const handleActionClick = async (material: typeof materiales[0]) => {
     setMaterialSeleccionado(material.key);
-if (material.tipo === "whatsapp") {
+    if (material.tipo === "whatsapp") {
+      if (
+        typeof window !== "undefined" &&
+        (window as any).fbq
+      ) {
+        (window as any).fbq("track", "Lead", {
+          numero: numeroVisual,
+          material: "ORO 14KTS",
+        });
+      }
 
-  if (
-    typeof window !== "undefined" &&
-    (window as any).fbq
-  ) {
-    (window as any).fbq("track", "Lead", {
-      numero: numeroVisual,
-      material: "ORO 14KTS",
-    });
-  }
+      const mensaje = `Hola Strafalaria, quiero cotizar un dije personalizado con el número "${numeroVisual}" en ORO 14KTS.`;
 
-  const mensaje = `Hola Strafalaria, quiero cotizar un dije personalizado con el número "${numeroVisual}" en ORO 14KTS.`;
+      window.open(
+        `https://wa.me/5215549614585?text=${encodeURIComponent(mensaje)}`,
+        "_blank"
+      );
 
-  window.open(
-    `https://wa.me/5215549614585?text=${encodeURIComponent(mensaje)}`,
-    "_blank"
-  );
-
-  return;
-}
+      return;
+    }
     setCargandoPago(true);
     try {
       const response = await fetch("/api/checkout", {
@@ -379,7 +381,6 @@ if (material.tipo === "whatsapp") {
 
       const data = await response.json();
 
-      // CORRECCIÓN CLAVE: Redirigimos usando window.location con la propiedad initPoint que envía el backend
       if (data.initPoint) {
         window.location.assign(data.initPoint);
       } else {
@@ -550,16 +551,35 @@ export default function Home() {
     { id: 1, nombre: "CREW", plata: "$2,900", bano: "$3,200" },
     { id: 2, nombre: "ICONIC", plata: "$2,400", bano: "$2,700" },
     { id: 3, nombre: "HONOR", plata: "$3,600", bano: "$3,800" },
-    { id: 4, nombre: "ROSTER", plata: "$2,400", bano: "$2,700" },
+    { id: 4, font: "ROSTER", nombre: "ROSTER", plata: "$2,400", bano: "$2,700" },
     { id: 5, nombre: "ELITE", plata: "$3,200", bano: "$3,900" },
   ];
 
   return (
     <main className="bg-black text-white min-h-screen">
+      {/* 1. CARGA LA LIBRERÍA DE GOOGLE ANALYTICS */}
+      <Script
+        src="https://www.googletagmanager.com/gtag/js?id=G-8DLPVZSJCL"
+        strategy="afterInteractive"
+      />
+      
+      {/* 2. INICIALIZA GOOGLE ANALYTICS */}
+      <Script id="google-analytics" strategy="afterInteractive">
+        {`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-8DLPVZSJCL');
+        `}
+      </Script>
+
       <Script
         src="https://sdk.mercadopago.com/js/v2"
         strategy="lazyOnload"
       />
+
+      {/* BANNER HORIZONTAL DINÁMICO EN LA PARTE MAS ALTA */}
+      <ScrollMarquee />
 
       {/* HERO */}
       <section
@@ -581,9 +601,10 @@ export default function Home() {
         <div className="absolute inset-0 bg-black/70" />
 
         <div className="relative z-10 text-center w-full max-w-4xl">
+          {/* SE AGREGÓ mt-8 AQUÍ ABAJO PARA DARLE ESPACIO RESPECTO AL BANNER SUPERIOR */}
           <img
             src="/disenos/logo-strafalaria-white.svg"
-            className="w-40 mx-auto mb-6"
+            className="w-40 mx-auto mt-8 mb-6"
             alt="Strafalaria Logo"
           />
 
@@ -605,6 +626,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* BANNER INTERMEDIO */}
+      <ScrollMarquee />
 
       {/* PRODUCTS */}
       <section
@@ -701,64 +725,63 @@ export default function Home() {
           </div>
         </div>
       </section>
+      
       <TrustSection />
+      <TestimoniosSection />
 
       {/* FORMAS DE PAGO */}
       <div className="grid grid-cols-3 gap-4 max-w-4xl mx-auto">
-  {/* VISA */}
-  <div
-    className="
-      rounded-2xl
-      border border-white/10
-      bg-white/[0.02]
-      backdrop-blur-xl
-      h-[120px]
-      flex items-center justify-center
-    "
-  >
-    <img
-      src="/icons/visa.svg"
-      alt="Visa"
-      className="h-10 w-auto"
-    />
-  </div>
+        {/* VISA */}
+        <div
+          className="
+            rounded-2xl
+            bg-white/[0.02]
+            backdrop-blur-xl
+            h-[120px]
+            flex items-center justify-center
+          "
+        >
+          <img
+            src="/icons/visa.svg"
+            alt="Visa"
+            className="h-10 w-auto"
+          />
+        </div>
 
-  {/* MASTERCARD */}
-  <div
-    className="
-      rounded-2xl
-      border border-white/10
-      bg-white/[0.02]
-      backdrop-blur-xl
-      h-[120px]
-      flex items-center justify-center
-    "
-  >
-    <img
-      src="/icons/mastercard.svg"
-      alt="Mastercard"
-      className="h-12 w-auto"
-    />
-  </div>
+        {/* MASTERCARD */}
+        <div
+          className="
+            rounded-2xl
+            bg-white/[0.02]
+            backdrop-blur-xl
+            h-[120px]
+            flex items-center justify-center
+          "
+        >
+          <img
+            src="/icons/mastercard.svg"
+            alt="Mastercard"
+            className="h-12 w-auto"
+          />
+        </div>
 
-  {/* MERCADO PAGO */}
-  <div
-    className="
-      rounded-2xl
-      border border-white/10
-      bg-white/[0.02]
-      backdrop-blur-xl
-      h-[120px]
-      flex items-center justify-center
-    "
-  >
-    <img
-      src="/icons/mercado-pago.svg"
-      alt="Mercado Pago"
-      className="h-10 w-auto"
-    />
-  </div>
-</div>
+        {/* MERCADO PAGO */}
+        <div
+          className="
+            rounded-2xl
+            bg-white/[0.02]
+            backdrop-blur-xl
+            h-[120px]
+            flex items-center justify-center
+          "
+        >
+          <img
+            src="/icons/mercado-pago.svg"
+            alt="Mercado Pago"
+            className="h-10 w-auto"
+          />
+        </div>
+      </div>
 
       {/* FOOTER */}
       <footer
@@ -910,6 +933,23 @@ export default function Home() {
           Diseño, Strafalaria México © 2026, Todos los derechos reservados.
         </p>
       </footer>
+
+      {/* BOTÓN FLOTANTE DE WHATSAPP */}
+      <a
+        href={`https://wa.me/5215549614585?text=${encodeURIComponent(
+          "¡Hola Strafalaria! Estoy navegando en su landing y me gustaría recibir más información o cotizar una joya personalizada."
+        )}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-6 right-6 z-50 bg-[#25D366] hover:bg-[#20ba5a] w-[72px] h-[72px] rounded-full shadow-lg shadow-green-900/40 hover:shadow-xl hover:shadow-green-900/60 transition-all duration-300 hover:scale-110 flex items-center justify-center overflow-hidden"
+        aria-label="Contactar por WhatsApp"
+      >
+        <img 
+          src="/icons/whatsapp.svg" 
+          alt="WhatsApp" 
+          className="w-[72px] h-[72px] object-contain invert brightness-0 scale-[1.43] select-none pointer-events-none" 
+        />
+      </a>
     </main>
   );
 }
