@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Script from "next/script";
 import TrustSection from "./components/TrustSection";
-import TestimoniosSection from "./components/TestimoniosSection";
+import { TestimoniosSection } from "./components/TestimoniosSection";
 import ScrollMarquee from "./components/ScrollMarquee";
 
 /* ==========================================================================
