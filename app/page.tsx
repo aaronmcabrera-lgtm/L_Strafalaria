@@ -1,10 +1,38 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Script from "next/script";
 import TrustSection from "./components/TrustSection";
 import { TestimoniosSection } from "./components/TestimoniosSection";
-import ScrollMarquee from "./components/ScrollMarquee";
+
+function ScrollMarquee({ mt = "mt-0" }) {
+  const mensajes = [
+    { parte1: "Ó APARTA TU NÚMERO ", parte2: "CON TAN SOLO ", parte3: "$300 PESOS", tieneLeyenda: true, esItalica: false },
+    { parte1: "PAGA A ", parte2: "MESES SIN INTERESES", parte3: "", tieneLeyenda: false, esItalica: true }
+  ];
+
+  return (
+    <div className={`w-full bg-[#A1E9E6] overflow-hidden py-2 ${mt}`}>
+      <div className="flex whitespace-nowrap animate-marquee">
+        {[...mensajes, ...mensajes, ...mensajes].map((item, i) => (
+          <span key={i} className={`mx-10 uppercase text-black text-[15px] tracking-wide flex flex-col items-center justify-center shrink-0 ${item.esItalica ? 'italic' : ''}`}>
+            <span className="flex gap-1.5">
+              <span className="font-light">{item.parte1}</span>
+              <span className={item.esItalica ? "font-black" : "font-light"}>{item.parte2}</span>
+              <span className="font-black">{item.parte3}</span>
+            </span>
+            
+            {item.tieneLeyenda && (
+              <span className="font-bold opacity-80 text-[10px] uppercase mt-0.5">
+                APLICA SÓLO EN DIJES DEL SIMULADOR
+              </span>
+            )}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 /* ==========================================================================
    PRODUCT CARD Component
@@ -144,113 +172,148 @@ function ProductCard({
    SIMULADOR Component
    ========================================================================== */
 function Simulador() {
-  const [numero, setNumero] = useState("");
+  const [remountKey, setRemountKey] = useState(0);
+
+  useEffect(() => {
+    const handlePageshow = (event: PageTransitionEvent) => {
+      if (event.persisted) {
+        setRemountKey((prev) => prev + 1);
+      }
+    };
+
+    window.addEventListener('pageshow', handlePageshow);
+    return () => window.removeEventListener('pageshow', handlePageshow);
+  }, []);
+
+  return <SimuladorInterno key={remountKey} />;
+}
+
+function SimuladorInterno() {
+  const [numero, setNumero] = useState("0");
   const [materialSeleccionado, setMaterialSeleccionado] = useState("BAÑO ORO");
-  const [cargandoPago, setCargandoPago] = useState(false);
+  const [cargando, setCargando] = useState(false);
 
   const materiales = [
-    { key: "BAÑO ORO", titulo: "BAÑO DE ORO", precio: "$1,200", precioNumerico: 1200, sublabel: "DESDE", tipo: "pago_directo" },
-    { key: "PLATA", titulo: "PLATA", precio: "$990", precioNumerico: 990, sublabel: "DESDE", tipo: "pago_directo" },
-    { key: "ORO", titulo: "Oro 14kts", precio: "$7,700", precioNumerico: 7700, sublabel: "DESDE", tipo: "whatsapp" },
+    { key: "PLATA", titulo: "PLATA", precio: "$1200", sublabel: "DESDE" },
+    { key: "BAÑO ORO", titulo: "BAÑO DE ORO", precio: "$1,600", sublabel: "DESDE" },
+    { key: "ORO", titulo: "ORO 14KTS", precio: "$8,700", sublabel: "DESDE" },
   ];
 
-  const numeroLimpio = numero.trim().replace(/^0+/, "");
-  const numeroVisual = numeroLimpio === "" ? "0" : numeroLimpio;
-  const materialActivo = materiales.find((m) => m.key === materialSeleccionado) || materiales[0];
-  const imagenPath = materialSeleccionado === "PLATA" ? `/disenos/${numeroVisual}-silver.png` : `/disenos/${numeroVisual}-gold.png`;
+  const imagenPath = materialSeleccionado === "PLATA" 
+    ? `/disenos/${numero || "0"}-silver.png` 
+    : `/disenos/${numero || "0"}-gold.png`;
 
-  const handleActionClick = async (material: typeof materiales[0]) => {
-    setMaterialSeleccionado(material.key);
-    if (material.tipo === "whatsapp") {
-      if (typeof window !== "undefined" && (window as any).fbq) {
-        (window as any).fbq("track", "Lead", { numero: numeroVisual, material: "ORO 14KTS" });
-      }
-      const mensaje = `Hola Strafalaria, quiero cotizar un dije personalizado con el número "${numeroVisual}" en ORO 14KTS.`;
-      window.open(`https://wa.me/5215549614585?text=${encodeURIComponent(mensaje)}`, "_blank");
-      return;
-    }
-    setCargandoPago(true);
+  const handleAction = async (esApartado: boolean) => {
+    setCargando(true);
     try {
       const response = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ numero: numeroVisual, material: material.titulo, precio: material.precioNumerico }),
+        body: JSON.stringify({
+          numero: numero || "0",
+          material: materialSeleccionado,
+          precio: esApartado ? 300 : (materialSeleccionado === "PLATA" ? 990 : 1200),
+          esApartado 
+        }),
       });
       const data = await response.json();
-      if (data.initPoint) window.location.assign(data.initPoint);
-      else alert("No se pudo obtener el enlace de pago.");
-    } catch (error) {
-      console.error("Error:", error);
-      alert("Hubo un error al conectar con la pasarela.");
-    } finally {
-      setCargandoPago(false);
+      if (data.initPoint) {
+        window.location.assign(data.initPoint);
+      } else { 
+        alert("Error de pago"); 
+        setCargando(false); 
+      }
+    } catch (e) { 
+      alert("Error en la conexión"); 
+      setCargando(false); 
     }
+  };
+
+  const handleWhatsApp = () => {
+    const msg = `Hola, quiero cotizar el dije #${numero || "0"} en ORO 14KTS.`;
+    window.open(`https://wa.me/5215549614585?text=${encodeURIComponent(msg)}`, "_blank");
   };
 
   return (
     <div className="w-full max-w-md mx-auto bg-black/40 backdrop-blur-xl rounded-3xl p-6 border border-white/10">
-      <h2 className="text-center text-white text-[20px] tracking-wide uppercase font-bold mb-4">Simulador Strafalaria</h2>
+      <h2 className="text-center text-white text-[20px] uppercase font-bold mb-4">SIMULADOR STRAFALARIA</h2>
+      
       <input
         type="text"
         value={numero}
-        placeholder="ESCRIBE AQUÍ TU NÚMERO"
-        onChange={(e) => {
-          const val = e.target.value.replace(/\D/g, "");
-          setNumero(val.slice(0, 3));
-        }}
-        className="font-antonio w-full px-4 py-3 bg-black/70 text-white border border-[#00E676]/60 rounded-xl text-center text-lg font-extrabold placeholder:text-[11px] placeholder:text-white/40 placeholder:tracking-widest"
+        onChange={(e) => setNumero(e.target.value.replace(/\D/g, "").slice(0, 3))}
+        className="w-full px-4 py-3 bg-black/70 text-white border border-[#00E676]/60 rounded-xl text-center text-3xl font-black mb-4 placeholder:text-white/40"
+        placeholder="0"
       />
-      <div className="mt-4 bg-black/20 p-2 rounded-2xl flex justify-center items-center min-h-[160px]">
-        <img src={imagenPath} className="w-[140px] h-auto object-contain" alt={`Dije número ${numeroVisual}`} />
+
+      <div className="flex justify-center mb-6 min-h-[224px]">
+        <img src={imagenPath} alt="Dije" className="h-56 object-contain" />
       </div>
-      <div className="flex flex-col gap-3 mt-4">
-        {materiales.map((material) => {
-          const isSelected = materialSeleccionado === material.key;
-          return (
-            <div key={material.key} onClick={() => setMaterialSeleccionado(material.key)} className={`flex items-center justify-between rounded-xl border p-3 transition cursor-pointer ${isSelected ? "border-[#D4AF37] bg-[#D4AF37]/5" : "border-white/10 bg-white/[0.01]"}`}>
-              <div className="flex items-center gap-3">
-                <div className="relative flex items-center justify-center">
-                  <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition ${isSelected ? "border-[#D4AF37]" : "border-white/30"}`}>
-                    {isSelected && <div className="w-2 h-2 rounded-full bg-[#D4AF37]" />}
-                  </div>
-                </div>
-                <div className={`w-9 h-9 rounded-full shadow-inner ${material.key === "PLATA" ? "bg-gradient-to-tr from-zinc-400 to-zinc-100" : "bg-gradient-to-tr from-amber-600 to-amber-300"}`} />
-                <div className="flex flex-col text-left">
-                  <span className="text-[11px] font-bold text-white uppercase tracking-wider">{material.titulo}</span>
-                  <div className="flex items-baseline gap-1.5">
-                    <span className="text-[9px] text-white/30 font-mono">{material.sublabel}</span>
-                    <span className="text-[18px] font-extrabold text-white leading-tight">{material.precio}</span>
-                  </div>
-                </div>
-              </div>
-              <div className="border-l border-white/10 pl-4 min-w-[95px] text-center">
-                {material.tipo === "pago_directo" ? (
-                  <button onClick={(e) => { e.stopPropagation(); handleActionClick(material); }} disabled={cargandoPago} className={`text-[10px] font-black uppercase tracking-wider transition ${material.key === "PLATA" ? "text-white/25 hover:text-white/50" : "text-white hover:text-[#D4AF37]"}`}>
-                    {cargandoPago && isSelected ? "Procesando..." : "APARTAR CON $300"}
-                  </button>
-                ) : (
-                  <button onClick={(e) => { e.stopPropagation(); handleActionClick(material); }} className="flex flex-col items-center justify-center mx-auto">
-                    <img src="/icons/whatsapp.svg" alt="WhatsApp" className="w-11 h-11 aspect-square hover:scale-120 transition object-contain" />
-                    <span className="text-[11px] text-white/50 uppercase mt-0.5 tracking-tighter">cotiza el tuyo</span>
-                  </button>
-                )}
-              </div>
+
+      <div className="flex flex-col gap-2 mb-6">
+        {materiales.map((m) => (
+          <button
+            key={m.key}
+            onClick={() => setMaterialSeleccionado(m.key)}
+            className={`flex items-center justify-between rounded-xl border p-3 transition ${
+              materialSeleccionado === m.key 
+                ? "border-[#D4AF37] bg-[#D4AF37]/5" 
+                : "border-white/10 bg-white/[0.01]"
+            }`}
+          >
+            <div className="flex flex-col items-start">
+              <span className="text-[13px] font-black text-white uppercase tracking-[0.15em]">{m.titulo}</span>
+              <span className="text-[9px] text-white/50 uppercase tracking-widest">{m.sublabel}</span>
             </div>
-          );
-        })}
+            <span className="text-[18px] font-black text-white tracking-tight">{m.precio}</span>
+          </button>
+        ))}
       </div>
-      <p className="text-[9px] text-white/60 text-center uppercase tracking-widest mt-4">TODOS NUESTROS DIJES EN BAÑO DE ORO Y PLATA INCLUYEN UNA CADENA DE 50CM. Y TIENEN ENVÍO GRÁTIS EN EL AREA METROPOLITANA</p>
-      <div className="mt-5 flex flex-col items-center gap-2">
-        <button onClick={() => handleActionClick(materialActivo)} disabled={cargandoPago} className="w-full bg-gradient-to-r from-[#00E5FF] to-[#00E676] rounded-full py-2 px-6 flex items-center justify-center gap-3 shadow-[0_4px_15px_rgba(0,229,255,0.10)] hover:scale-[1.01] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
-          <span className="text-[14px] text-black font-extrabold uppercase tracking-[0.05em]">
-            {cargandoPago ? "PROCESANDO..." : materialActivo.key === "ORO" ? "COTIZAR POR WHATSAPP" : "PAGAR CON MERCADO PAGO"}
+
+      <div className="flex flex-col gap-2">
+        {materialSeleccionado === "ORO" ? (
+          <button 
+            onClick={handleWhatsApp} 
+            className="w-full bg-white text-black py-3 rounded-full font-black uppercase text-sm hover:bg-gray-200 transition-all flex items-center justify-center gap-3"
+          >
+            <div className="w-5 h-5 flex items-center justify-center">
+              <img src="/icons/whatsapp.svg" alt="WhatsApp" className="w-5 h-5 scale-[1.8] object-contain" />
+            </div>
+            COTIZAR POR WHATSAPP
+          </button>
+        ) : (
+          <>
+            <button onClick={() => handleAction(false)} disabled={cargando} className="w-full bg-gradient-to-r from-[#00E5FF] to-[#00E676] text-black py-3 rounded-full font-black uppercase text-sm hover:opacity-90 transition-all disabled:opacity-50">
+              {cargando ? "PROCESANDO..." : "PAGA A MSI"}
+            </button>
+            <button onClick={() => handleAction(true)} disabled={cargando} className="w-full border border-white/20 text-white py-3 rounded-full font-bold uppercase text-sm hover:bg-white/5 transition-all disabled:opacity-50">
+              {cargando ? "PROCESANDO..." : "Ó APARTA CON $300"}
+            </button>
+          </>
+        )}
+      </div>
+
+      <div className="mt-4 pt-4 border-t border-white/10 flex flex-col gap-3">
+        <div className="flex flex-wrap items-center justify-center gap-4 text-xs text-white/80 font-medium">
+          <span className="flex items-center gap-1.5">
+            <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+            </svg>
+            Compra Segura SSL
           </span>
-        </button>
-        <div className="text-[12px] text-white/50 tracking-widest uppercase flex items-center gap-1 mt-4">🛡️ Seguridad y Confianza</div>
-        <div className="flex items-center justify-center gap-4 transition mt-1">
-          <img src="/icons/visa.svg" alt="Visa" className="h-11 w-auto" />
-          <img src="/icons/mastercard.svg" alt="Mastercard" className="h-11 w-auto" />
-          <img src="/icons/mercado-pago.svg" alt="Mercado Pago" className="h-11 w-auto" />
+          <span className="flex items-center gap-1.5">
+            <svg className="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+            </svg>
+            Protección de Datos
+          </span>
+        </div>
+
+        {/* Iconos de pagos con tamaño aumentado */}
+        <div className="flex items-center justify-center gap-5 pt-1">
+          <img src="/icons/visa.svg" className="h-9 w-auto opacity-90 hover:opacity-100 transition-opacity" alt="Visa" />
+          <img src="/icons/mastercard.svg" className="h-9 w-auto opacity-90 hover:opacity-100 transition-opacity" alt="Mastercard" />
+          <img src="/icons/mercado-pago.svg" className="h-8 w-auto opacity-90 hover:opacity-100 transition-opacity" alt="Mercado Pago" />
         </div>
       </div>
     </div>
@@ -261,12 +324,18 @@ function Simulador() {
    HOME PAGE (Main Interface Component)
    ========================================================================== */
 export default function Home() {
+  useEffect(() => {
+    if (window.location.search.length > 0) {
+      window.history.replaceState({}, document.title, window.location.origin);
+    }
+  }, []);
+
   const productos = [
-    { id: 1, nombre: "CREW", plata: "$2,900", bano: "$3,200" },
-    { id: 2, nombre: "ICONIC", plata: "$2,400", bano: "$2,700" },
-    { id: 3, nombre: "HONOR", plata: "$3,600", bano: "$3,800" },
-    { id: 4, nombre: "ROSTER", plata: "$2,400", bano: "$2,700" },
-    { id: 5, nombre: "ELITE", plata: "$3,200", bano: "$3,900" },
+    { id: 1, nombre: "CREW", plata: "$3,600", bano: "$4,200" },
+    { id: 2, nombre: "ICONIC", plata: "$3,600", bano: "$4,300" },
+    { id: 3, nombre: "HONOR", plata: "$4,900", bano: "$5,200" },
+    { id: 4, nombre: "ROSTER", plata: "$3,200", bano: "$3,500" },
+    { id: 5, nombre: "ELITE", plata: "$4,300", bano: "$4,700" },
   ];
 
   return (
@@ -276,7 +345,9 @@ export default function Home() {
         {`window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', 'G-8DLPVZSJCL');`}
       </Script>
       <Script src="https://sdk.mercadopago.com/js/v2" strategy="lazyOnload" />
+      
       <ScrollMarquee />
+
       <section className="relative min-h-[90vh] flex flex-col items-center justify-center px-6 bg-cover bg-center" style={{ backgroundImage: "url('/disenos/fondo-hero.jpg')" }}>
         <div className="absolute inset-0 bg-black/70" />
         <div className="relative z-10 text-center w-full max-w-4xl">
@@ -285,7 +356,11 @@ export default function Home() {
           <Simulador />
         </div>
       </section>
-      <ScrollMarquee />
+
+      <div className="mt-10">
+        <ScrollMarquee />
+      </div>
+
       <section className="py-16 px-6 border-t border-white/5">
         <div className="max-w-7xl mx-auto text-center">
           <h2 className="font-antonio text-[42px] md:text-[58px] uppercase tracking-[0.20em] font-black text-white mb-6">MÁS QUE JOYAS</h2>
@@ -301,13 +376,33 @@ export default function Home() {
           </div>
         </div>
       </section>
+
       <TrustSection />
       <TestimoniosSection />
-      <div className="grid grid-cols-3 gap-4 max-w-4xl mx-auto">
-        <div className="rounded-2xl bg-white/[0.02] backdrop-blur-xl h-[120px] flex items-center justify-center"><img src="/icons/visa.svg" alt="Visa" className="h-10 w-auto" /></div>
-        <div className="rounded-2xl bg-white/[0.02] backdrop-blur-xl h-[120px] flex items-center justify-center"><img src="/icons/mastercard.svg" alt="Mastercard" className="h-12 w-auto" /></div>
-        <div className="rounded-2xl bg-white/[0.02] backdrop-blur-xl h-[120px] flex items-center justify-center"><img src="/icons/mercado-pago.svg" alt="Mercado Pago" className="h-10 w-auto" /></div>
-      </div>
+      
+      <section className="max-w-4xl mx-auto px-6 py-8">
+        <div className="bg-neutral-900/40 border border-white/10 rounded-2xl p-6 backdrop-blur-xl flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-3 text-center md:text-left">
+            <div className="p-3 rounded-xl bg-emerald-500/10 text-emerald-400 shrink-0 mx-auto md:mx-0">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+              </svg>
+            </div>
+            <div>
+              <h4 className="text-sm font-bold uppercase tracking-wider text-white">Transacciones 100% Protegidas</h4>
+              <p className="text-xs text-white/60">Pagos cifrados y seguros respaldados por instituciones de primer nivel.</p>
+            </div>
+          </div>
+
+          {/* Iconos de pagos con tamaño aumentado */}
+          <div className="flex items-center justify-center gap-6 shrink-0">
+            <img src="/icons/visa.svg" className="h-11 w-auto opacity-90 hover:opacity-100 transition-opacity" alt="Visa" />
+            <img src="/icons/mastercard.svg" className="h-11 w-auto opacity-90 hover:opacity-100 transition-opacity" alt="Mastercard" />
+            <img src="/icons/mercado-pago.svg" className="h-10 w-auto opacity-90 hover:opacity-100 transition-opacity" alt="Mercado Pago" />
+          </div>
+        </div>
+      </section>
+
       <footer className="border-t border-white/5 py-14 px-6 bg-black">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between gap-12">
           <div className="flex flex-col items-center md:items-start gap-6">
@@ -327,6 +422,7 @@ export default function Home() {
         </div>
         <p className="text-center text-white/35 text-[10px] mt-10">Diseño, Strafalaria México © 2026, Todos los derechos reservados.</p>
       </footer>
+      
       <a href={`https://wa.me/5215549614585?text=${encodeURIComponent("¡Hola Strafalaria! Estoy navegando en su landing y me gustaría recibir más información o cotizar una joya personalizada.")}`} target="_blank" rel="noopener noreferrer" className="fixed bottom-6 right-6 z-50 bg-[#25D366] hover:bg-[#20ba5a] w-[72px] h-[72px] rounded-full shadow-lg shadow-green-900/40 hover:shadow-xl hover:shadow-green-900/60 transition-all duration-300 hover:scale-110 flex items-center justify-center overflow-hidden" aria-label="Contactar por WhatsApp">
         <img src="/icons/whatsapp.svg" alt="WhatsApp" className="w-[72px] h-[72px] object-contain invert brightness-0 scale-[1.43] select-none pointer-events-none" />
       </a>

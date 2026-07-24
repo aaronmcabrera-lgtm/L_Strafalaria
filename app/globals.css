@@ -9,3 +9,11 @@ h1 {
 button, input, select, p, a {
   font-family: 'Montserrat', sans-serif !important;
 }
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  animation: marquee 20s linear infinite;
+}

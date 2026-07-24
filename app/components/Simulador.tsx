@@ -1,109 +1,101 @@
 "use client";
 
-import { useState } from "react";
-import Image from "next/image";
+import { useState, useEffect } from "react";
 
-export default function Simulador() {
-  // Número del dije
+export const Simulador = () => {
+  // FUERZA DE HIDRATACIÓN
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => { setIsMounted(true); }, []);
+
   const [numero, setNumero] = useState("29");
+  const [material, setMaterial] = useState("Baño de oro");
 
-  // Material seleccionado
-  const [material, setMaterial] = useState("Oro");
+  if (!isMounted) return null; // Espera a que el navegador esté listo
 
-  // Cambio del input
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value.slice(0, 3);
-    setNumero(val);
+  const infoMateriales: Record<string, { precio: string; precioNumerico: number }> = {
+    Plata: { precio: "$990", precioNumerico: 990 },
+    "Baño de oro": { precio: "$1,200", precioNumerico: 1200 },
+    Oro: { precio: "Cotizar", precioNumerico: 0 },
   };
 
-  // Materiales disponibles
-  const materiales = ["Oro", "Plata", "Baño de oro"];
-
-  // Link dinámico de WhatsApp
-  const whatsappLink = `https://wa.me/5215510141024?text=${encodeURIComponent(
-    `Hola, quiero cotizar el dije #${numero} en ${material}.`
-  )}`;
+  const getLink = (tipoCompra: 'apartado' | 'completo') => {
+    const links: Record<string, Record<string, string>> = {
+      Plata: {
+        completo: "https://mpago.li/1HQs6jJ",
+        apartado: "https://mpago.la/1RdGaU9"
+      },
+      "Baño de oro": {
+        completo: "https://mpago.la/2UMEGbK",
+        apartado: "https://mpago.la/2jscpgU"
+      }
+    };
+    return links[material]?.[tipoCompra] || "#";
+  };
 
   return (
-    <div className="w-full max-w-md mx-auto bg-[#0a0a0a]/80 backdrop-blur-md border border-white/10 rounded-xl p-8 shadow-2xl">
-      
-      {/* Encabezado */}
-      <div className="text-center mb-6">
-        <p className="text-xs uppercase tracking-[0.2em] text-gray-400 mb-1">
-          Personaliza tu dije
-        </p>
+    <div className="w-full max-w-md mx-auto bg-neutral-900/40 p-6 rounded-3xl border border-white/10 backdrop-blur-xl shadow-2xl">
+      <h2 className="text-center text-white/50 text-[10px] uppercase tracking-[0.25em] mb-6 font-bold">
+        Configura tu pieza Strafalaria
+      </h2>
 
-        <p className="text-[10px] text-gray-500 italic">
-          Escribe tu número y selecciona el material
-        </p>
+      <input
+        type="text"
+        value={numero}
+        onChange={(e) => setNumero(e.target.value.replace(/\D/g, "").slice(0, 3))}
+        className="w-full bg-black border border-white/10 rounded-xl py-4 text-center text-4xl font-black text-white mb-6 focus:border-[#D4AF37] outline-none transition-all placeholder:text-white/10"
+        placeholder="00"
+      />
+
+      <div className="flex flex-col gap-2 mb-8">
+        {Object.entries(infoMateriales).map(([nombre, data]) => (
+          <button
+            key={nombre}
+            onClick={() => setMaterial(nombre)}
+            className={`flex items-center justify-between p-4 rounded-xl border transition-all duration-300 ${
+              material === nombre ? "border-[#D4AF37] bg-[#D4AF37]/10" : "border-white/5 bg-white/5 hover:bg-white/10"
+            }`}
+          >
+            <span className={`font-bold uppercase text-sm ${material === nombre ? "text-[#D4AF37]" : "text-white"}`}>
+              {nombre}
+            </span>
+            <span className={`font-black text-lg ${material === nombre ? "text-white" : "text-white/40"}`}>
+              {data.precio}
+            </span>
+          </button>
+        ))}
       </div>
 
-      {/* Input número */}
-      <div className="mb-6">
-        <input
-          type="number"
-          value={numero}
-          onChange={handleChange}
-          className="w-full bg-black border border-white/20 rounded-md py-3 text-center text-2xl font-bold text-white focus:outline-none focus:border-white transition-colors"
-          placeholder="00"
-        />
-      </div>
-
-      {/* Etiquetas materiales */}
-      <div className="mb-8">
-        <p className="text-xs uppercase tracking-[0.15em] text-gray-500 mb-3">
-          Material
-        </p>
-
-        <div className="flex gap-2 flex-wrap">
-          {materiales.map((item) => (
-            <button
-              key={item}
-              onClick={() => setMaterial(item)}
-              className={`px-4 py-2 rounded-full border text-xs uppercase tracking-wider transition-all duration-200
-              
-              ${
-                material === item
-                  ? "bg-[#D4AF37] text-black border-[#D4AF37] font-bold"
-                  : "bg-transparent text-white border-white/20 hover:border-white/50"
-              }`}
-            >
-              {item}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Preview */}
-      <div className="relative aspect-square w-full mb-8 bg-[#111] rounded-lg overflow-hidden flex items-center justify-center border border-white/5">
-        
-        {numero ? (
-          <Image
-            src={`/disenos/${numero}.png`}
-            alt={`Dije personalizado número ${numero}`}
-            fill
-            className="object-contain p-4 transition-opacity duration-300"
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.src = "/disenos/default.png";
-            }}
-          />
+      <div className="space-y-3">
+        {material === "Oro" ? (
+          <a 
+            href={`https://wa.me/5215510141024?text=${encodeURIComponent(`Hola, quiero cotizar el dije #${numero} en ${material}.`)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block w-full text-center bg-white text-black py-4 rounded-xl font-black uppercase text-xs tracking-widest hover:bg-neutral-200 transition-all"
+          >
+            Cotizar por WhatsApp
+          </a>
         ) : (
-          <div className="text-gray-600 text-sm italic">
-            Ingresa un número
-          </div>
+          <>
+            <a 
+              href={getLink('completo')}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full text-center bg-[#00E676] text-black py-4 rounded-xl font-black uppercase text-xs tracking-widest shadow-lg hover:scale-[1.02] transition-all"
+            >
+              Comprar con 12 MSI
+            </a>
+            <a 
+              href={getLink('apartado')}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full text-center border border-white/20 text-white py-4 rounded-xl font-bold uppercase text-xs tracking-widest hover:bg-white/5 transition-all"
+            >
+              Apartar con $300
+            </a>
+          </>
         )}
       </div>
-
-      {/* CTA */}
-      <a
-        href={whatsappLink}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="block w-full text-center bg-[#00E676] hover:bg-[#00c864] text-black font-black py-4 rounded-md uppercase tracking-wider text-sm transition-all shadow-[0_0_20px_rgba(0,230,118,0.3)]"
-      >
-        Cotizar en {material}
-      </a>
     </div>
   );
-}
+};

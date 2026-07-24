@@ -1,57 +1,41 @@
 import { NextRequest, NextResponse } from "next/server";
 import { MercadoPagoConfig, Preference } from "mercadopago";
 
-// 1. Inicializamos el cliente de Mercado Pago con tu token del .env.local
-const client = new MercadoPagoConfig({ 
-  accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN || "" 
+const client = new MercadoPagoConfig({
+  accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN!,
 });
-
-export async function GET() {
-  return NextResponse.json({ ok: true });
-}
 
 export async function POST(request: NextRequest) {
   try {
-    // 1. Leemos los datos dinámicos que manda tu simulador (número, material, etc.)
-    const body = await request.json();
-    const { numero, material } = body;
-
+    const { numero, material, precio, esApartado } = await request.json();
     const preference = new Preference(client);
-    
-    // 2. Generamos la preferencia con el precio fijo del apartado
-    const response = await preference.create({
+
+    const result = await preference.create({ 
       body: {
-        items: [
-          {
-            id: `apartado-${numero}-${material}`.toLowerCase().replace(/ /g, "-"),
-            // El título le aclarará al cliente que está pagando solo el anticipo
-            title: `Apartado Dije #${numero} (${material}) - Strafalaria`, 
-            quantity: 1,
-            unit_price: 300, // <-- CAMBIO AQUÍ: Ahora Mercado Pago solo cobrará los $300 del anticipo
-            currency_id: "MXN",
-          }
-        ],
-        payer: {
-          email: "test_user_123456@testuser.com", 
+        items: [{
+          id: esApartado ? `apartado-${numero}` : `compra-${numero}`,
+          title: esApartado ? `Apartado Dije #${numero}` : `Dije #${numero} (${material})`,
+          quantity: 1,
+          unit_price: Number(precio),
+          currency_id: "MXN",
+        }],
+        // Habilitamos cuotas (hasta 12). 
+        // Mercado Pago mostrará las opciones disponibles según los convenios de tu cuenta.
+        payment_methods: {
+          installments: 12
         },
+        auto_return: "approved",
         back_urls: {
-          success: "http://localhost:3000/gracias", 
-          failure: "http://localhost:3000/error",
-          pending: "http://localhost:3000/pendiente"
-        },
-      }
+          success: "https://strafalaria.mx",
+          failure: "https://strafalaria.mx",
+          pending: "https://strafalaria.mx"
+        }
+      } 
     });
 
-    return NextResponse.json({ 
-      id: response.id, 
-      initPoint: response.init_point 
-    });
-
+    return NextResponse.json({ success: true, initPoint: result.init_point });
   } catch (error: any) {
-    console.error("Error al crear la preferencia en MP:", error);
-    return NextResponse.json(
-      { error: "Error interno al procesar el pago", detalles: error.message }, 
-      { status: 500 }
-    );
+    console.error("ERROR MP:", error);
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
