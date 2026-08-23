@@ -212,7 +212,7 @@ function SimuladorInterno() {
         body: JSON.stringify({
           numero: numero || "0",
           material: materialSeleccionado,
-          precio: esApartado ? 300 : (materialSeleccionado === "PLATA" ? 990 : 1200),
+          precio: esApartado ? 300 : (materialSeleccionado === "PLATA" ? 1200 : 1600),
           esApartado 
         }),
       });

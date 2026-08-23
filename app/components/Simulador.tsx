@@ -13,19 +13,19 @@ export const Simulador = () => {
   if (!isMounted) return null; // Espera a que el navegador esté listo
 
   const infoMateriales: Record<string, { precio: string; precioNumerico: number }> = {
-    Plata: { precio: "$990", precioNumerico: 990 },
-    "Baño de oro": { precio: "$1,200", precioNumerico: 1200 },
+    Plata: { precio: "$1200", precioNumerico: 1200 },
+    "Baño de oro": { precio: "$1,600", precioNumerico: 1600 },
     Oro: { precio: "Cotizar", precioNumerico: 0 },
   };
 
   const getLink = (tipoCompra: 'apartado' | 'completo') => {
     const links: Record<string, Record<string, string>> = {
       Plata: {
-        completo: "https://mpago.li/1HQs6jJ",
+        completo: "https://mpago.la/26u6huo",
         apartado: "https://mpago.la/1RdGaU9"
       },
       "Baño de oro": {
-        completo: "https://mpago.la/2UMEGbK",
+        completo: "https://mpago.la/2nSRmFH",
         apartado: "https://mpago.la/2jscpgU"
       }
     };
