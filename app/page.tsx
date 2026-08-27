@@ -5,6 +5,38 @@ import Script from "next/script";
 import TrustSection from "./components/TrustSection";
 import { TestimoniosSection } from "./components/TestimoniosSection";
 
+/* Animación fade-in + zoom suave para el PromoModal */
+function PromoModalStyles() {
+  return (
+    <style jsx global>{`
+      @keyframes strafalariaFadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+      @keyframes strafalariaZoomIn {
+        from {
+          opacity: 0;
+          transform: scale(0.92);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+      .animate-fadeIn {
+        animation: strafalariaFadeIn 0.35s ease-out forwards;
+      }
+      .animate-zoomIn {
+        animation: strafalariaZoomIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+    `}</style>
+  );
+}
+
 function ScrollMarquee({ mt = "mt-0" }) {
   const mensajes = [
     { parte1: "Ó APARTA TU NÚMERO ", parte2: "CON TAN SOLO ", parte3: "$300 PESOS", tieneLeyenda: true, esItalica: false },
@@ -169,6 +201,78 @@ function ProductCard({
 }
 
 /* ==========================================================================
+   PROMO MODAL Component
+   ========================================================================== */
+function PromoModal() {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const yaVisto = sessionStorage.getItem("strafalaria_promo_shown");
+    if (yaVisto) return;
+
+    const timer = setTimeout(() => {
+      setVisible(true);
+      sessionStorage.setItem("strafalaria_promo_shown", "true");
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  const cerrar = () => setVisible(false);
+
+  const irAlSimulador = () => {
+    cerrar();
+    document.getElementById("simulador-section")?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  if (!visible) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm px-4 animate-fadeIn"
+      onClick={cerrar}
+    >
+      <PromoModalStyles />
+      <div
+        className="relative w-full max-w-[380px] bg-black rounded-3xl overflow-hidden border border-white/10 shadow-2xl animate-zoomIn"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          onClick={cerrar}
+          className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-black/60 text-white flex items-center justify-center text-lg hover:bg-black/80 transition"
+          aria-label="Cerrar"
+        >
+          ×
+        </button>
+
+        <img
+          src="/disenos/promo-10off.png"
+          alt="10% de descuento"
+          className="w-full h-auto object-cover"
+        />
+
+        <div className="p-5 flex flex-col gap-3">
+          <button
+            onClick={irAlSimulador}
+            className="w-full bg-gradient-to-r from-[#00E5FF] to-[#00E676] text-black py-3 rounded-full font-black uppercase text-sm hover:opacity-90 transition"
+          >
+            Generar mi número
+          </button>
+          <a
+            href="https://www.instagram.com/strafalaria.mx/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-center text-white/50 text-[11px] uppercase tracking-wider hover:text-white/80 transition"
+          >
+            Síguenos en Instagram para más novedades, promos y sorpresas
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ==========================================================================
    SIMULADOR Component
    ========================================================================== */
 function Simulador() {
@@ -289,6 +393,14 @@ function SimuladorInterno() {
             <button onClick={() => handleAction(true)} disabled={cargando} className="w-full border border-white/20 text-white py-3 rounded-full font-bold uppercase text-sm hover:bg-white/5 transition-all disabled:opacity-50">
               {cargando ? "PROCESANDO..." : "Ó APARTA CON $300"}
             </button>
+            <a
+              href={`https://wa.me/5215549614585?text=${encodeURIComponent(`Hola Strafalaria, quiero mi 10% de descuento 🎉. Mi número generado en el simulador es: #${numero || "0"}, material: ${materialSeleccionado}.`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full text-center py-2 text-[11px] uppercase tracking-wider text-[#D4AF37] hover:text-white transition"
+            >
+              ¿Prefieres cotizar por WhatsApp y activar tu 10% OFF?
+            </a>
           </>
         )}
       </div>
@@ -347,8 +459,9 @@ export default function Home() {
       <Script src="https://sdk.mercadopago.com/js/v2" strategy="lazyOnload" />
       
       <ScrollMarquee />
+      <PromoModal />
 
-      <section className="relative min-h-[90vh] flex flex-col items-center justify-center px-6 bg-cover bg-center" style={{ backgroundImage: "url('/disenos/fondo-hero.jpg')" }}>
+      <section id="simulador-section" className="relative min-h-[90vh] flex flex-col items-center justify-center px-6 bg-cover bg-center" style={{ backgroundImage: "url('/disenos/fondo-hero.jpg')" }}>
         <div className="absolute inset-0 bg-black/70" />
         <div className="relative z-10 text-center w-full max-w-4xl">
           <img src="/disenos/logo-strafalaria-white.svg" className="w-40 mx-auto mt-8 mb-6" alt="Strafalaria Logo" />
