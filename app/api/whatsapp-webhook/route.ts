@@ -1,5 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
+import {
+  getOrCreateContact,
+  appendMessage,
+  updateEstado,
+  marcarComoEstrategico,
+  setPiezaDeInteres,
+  setNota,
+  EstadoContacto,
+} from "@/lib/notion";
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -95,8 +104,21 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto antes ni después, si
   "respuesta_cliente": "el mensaje que se le manda al cliente por WhatsApp, en tu tono normal",
   "escalar": true o false,
   "es_urgente": true o false,
-  "aviso_humano": "si escalar es true: 1-2 líneas para Aaron explicando qué pasó y por qué se escala, incluyendo el número/contexto del cliente si es relevante. Si escalar es false: cadena vacía"
+  "aviso_humano": "si escalar es true: 1-2 líneas para Aaron explicando qué pasó y por qué se escala, incluyendo el número/contexto del cliente si es relevante. Si escalar es false: cadena vacía",
+  "etapa": "una de: En conversación | Cotizando | Cerca de cerrar | Cerrado - Venta | Escalado a Aaron",
+  "contacto_estrategico": true o false,
+  "pieza_interes": "descripción corta de la pieza que le interesa al cliente (ej. 'Dije número 10, baño de oro'), o cadena vacía si aún no se sabe",
+  "nota": "algo puntual que Aaron debería saber de este mensaje (ej. 'pidió factura', 'cambió de número'), o cadena vacía si no aplica"
 }
+
+Guía para "etapa" (así se refleja el pipeline de Notion, úsalo con criterio):
+- "En conversación": plática normal, aún sin cotización concreta
+- "Cotizando": ya le diste un precio concreto de algún producto y está evaluando
+- "Cerca de cerrar": usa esto siempre que es_urgente sea true
+- "Cerrado - Venta": el cliente confirma que ya pagó/apartó
+- "Escalado a Aaron": escalaste algo que no es cierre de venta (oro 14k, reembolso, fuera de concepto, ajuste HONOR, contacto estratégico)
+Nunca uses "Nuevo" ni "Perdido" — esos los maneja el sistema o Aaron manualmente.
+
 "es_urgente" solo puede ser true si "escalar" también es true. Si no hay nada que escalar, usa escalar: false, es_urgente: false, aviso_humano: "".`;
 
 // ============================================================
@@ -107,7 +129,19 @@ type RespuestaAgente = {
   escalar: boolean;
   esUrgente: boolean;
   avisoHumano: string;
+  etapa: EstadoContacto | null;
+  contactoEstrategico: boolean;
+  piezaInteres: string;
+  nota: string;
 };
+
+const ETAPAS_VALIDAS: EstadoContacto[] = [
+  "En conversación",
+  "Cotizando",
+  "Cerca de cerrar",
+  "Cerrado - Venta",
+  "Escalado a Aaron",
+];
 
 // ============================================================
 // FUNCIÓN: genera la respuesta usando Claude (JSON estructurado:
@@ -128,21 +162,30 @@ async function generarRespuesta(mensajeCliente: string): Promise<RespuestaAgente
     // Por si el modelo envuelve el JSON en ```json ... ``` a pesar de la instrucción
     const limpio = raw.replace(/```json\s*|\s*```/g, "").trim();
     const parsed = JSON.parse(limpio);
+    const etapa = ETAPAS_VALIDAS.includes(parsed.etapa) ? (parsed.etapa as EstadoContacto) : null;
     return {
       respuestaCliente: parsed.respuesta_cliente || "Disculpa, ¿me lo puedes repetir?",
       escalar: Boolean(parsed.escalar),
       esUrgente: Boolean(parsed.escalar) && Boolean(parsed.es_urgente),
       avisoHumano: parsed.aviso_humano || "",
+      etapa,
+      contactoEstrategico: Boolean(parsed.contacto_estrategico),
+      piezaInteres: parsed.pieza_interes || "",
+      nota: parsed.nota || "",
     };
   } catch (error) {
     // Si el modelo no devolvió JSON válido, no perdemos el mensaje: se lo mandamos
-    // al cliente tal cual y no escalamos nada (mejor no molestar a Aaron por un error de formato).
+    // al cliente tal cual y no escalamos ni tocamos Notion (mejor no meter ruido por un error de formato).
     console.error("No se pudo parsear la respuesta del modelo como JSON:", raw);
     return {
       respuestaCliente: raw || "Disculpa, ¿me lo puedes repetir?",
       escalar: false,
       esUrgente: false,
       avisoHumano: "",
+      etapa: null,
+      contactoEstrategico: false,
+      piezaInteres: "",
+      nota: "",
     };
   }
 }
@@ -219,10 +262,19 @@ export async function POST(request: NextRequest) {
 
     console.log(`Mensaje de ${from}: ${text}`);
 
-    const { respuestaCliente, escalar, esUrgente, avisoHumano } = await generarRespuesta(text);
+    const {
+      respuestaCliente,
+      escalar,
+      esUrgente,
+      avisoHumano,
+      etapa,
+      contactoEstrategico,
+      piezaInteres,
+      nota,
+    } = await generarRespuesta(text);
 
-    // Siempre le respondemos al cliente primero, para no atrasar la conversación
-    // aunque el aviso a Aaron falle por alguna razón.
+    // Siempre le respondemos al cliente primero: nada de lo que pase con Notion
+    // debe atrasar o romper la conversación.
     await enviarMensajeWhatsApp(from, respuestaCliente);
 
     if (escalar && avisoHumano) {
@@ -231,6 +283,21 @@ export async function POST(request: NextRequest) {
       } catch (error) {
         console.error("No se pudo enviar el aviso a Aaron:", error);
       }
+    }
+
+    // Registro en Notion (CRM) — esto es lo que Aaron puede ver casi en tiempo real.
+    // Todo va en un try/catch aparte: si Notion falla, el cliente ya recibió su respuesta.
+    try {
+      const pageId = await getOrCreateContact(from, "WhatsApp");
+      await appendMessage(pageId, "Cliente", text);
+      await appendMessage(pageId, "Agente", respuestaCliente);
+
+      if (etapa) await updateEstado(pageId, etapa);
+      if (contactoEstrategico) await marcarComoEstrategico(pageId);
+      if (piezaInteres) await setPiezaDeInteres(pageId, piezaInteres);
+      if (nota) await setNota(pageId, nota);
+    } catch (error) {
+      console.error("No se pudo registrar la conversación en Notion:", error);
     }
 
     return NextResponse.json({ success: true });
