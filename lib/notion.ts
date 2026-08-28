@@ -5,7 +5,11 @@ import { Client } from "@notionhq/client";
 // (STRAFALARIA → Comercial → CRM)
 // ============================================================
 const notion = new Client({ auth: process.env.NOTION_API_KEY });
-const DB_ID = process.env.NOTION_CONTACTS_DB_ID as string;
+
+// OJO: desde la versión 2025-09-03 de la API de Notion, las bases de datos ya no se
+// consultan directo por su database_id — hay que usar el "data source" que vive adentro
+// de la base (para bases de una sola fuente, que es este caso, es un id fijo aparte).
+const DATA_SOURCE_ID = process.env.NOTION_DATA_SOURCE_ID as string;
 
 export type EstadoContacto =
   | "Nuevo"
@@ -21,8 +25,8 @@ export type Canal = "WhatsApp" | "Facebook" | "Instagram";
 // Busca un contacto existente por teléfono; si no existe, lo crea con Estado "Nuevo".
 // Devuelve el ID de la página de Notion (el "expediente" de ese cliente).
 export async function getOrCreateContact(telefono: string, canal: Canal): Promise<string> {
-  const busqueda = await notion.databases.query({
-    database_id: DB_ID,
+  const busqueda = await notion.dataSources.query({
+    data_source_id: DATA_SOURCE_ID,
     filter: {
       property: "Teléfono",
       phone_number: { equals: telefono },
@@ -34,7 +38,7 @@ export async function getOrCreateContact(telefono: string, canal: Canal): Promis
   }
 
   const nuevaPagina = await notion.pages.create({
-    parent: { database_id: DB_ID },
+    parent: { type: "data_source_id", data_source_id: DATA_SOURCE_ID },
     properties: {
       Nombre: { title: [{ text: { content: telefono } }] },
       "Teléfono": { phone_number: telefono },
