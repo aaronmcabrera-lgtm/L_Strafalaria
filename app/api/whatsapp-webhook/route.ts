@@ -7,7 +7,7 @@ import {
   marcarComoEstrategico,
   setPiezaDeInteres,
   setNota,
-  EstadoContacto,
+  type EstadoContacto,
 } from "@/lib/notion";
 
 const anthropic = new Anthropic({
