@@ -195,7 +195,7 @@ async function generarRespuesta(mensajeCliente: string): Promise<RespuestaAgente
 // (se usa tanto para responder al cliente como para avisar a Aaron)
 // ============================================================
 async function enviarMensajeWhatsApp(numeroDestino: string, texto: string) {
-  await fetch(
+  const response = await fetch(
     `https://graph.facebook.com/v21.0/${WHATSAPP_PHONE_NUMBER_ID}/messages`,
     {
       method: "POST",
@@ -211,8 +211,20 @@ async function enviarMensajeWhatsApp(numeroDestino: string, texto: string) {
       }),
     }
   );
-}
 
+  const data = await response.json();
+
+  if (!response.ok) {
+    console.error(
+      `ERROR AL ENVIAR WHATSAPP a ${numeroDestino}. Status: ${response.status}. Respuesta de Meta:`,
+      JSON.stringify(data)
+    );
+  } else {
+    console.log(`WhatsApp enviado correctamente a ${numeroDestino}:`, JSON.stringify(data));
+  }
+
+  return data;
+}
 // ============================================================
 // FUNCIÓN: avisa a Aaron por WhatsApp cuando el agente escala algo
 // ============================================================
