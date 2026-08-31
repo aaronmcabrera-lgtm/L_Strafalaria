@@ -279,12 +279,49 @@ async function enviarMensajeWhatsApp(numeroDestino: string, texto: string) {
   return data;
 }
 // ============================================================
+// RELEVO DE RESPUESTAS DE AARON
+// Cuando le reenviamos a Aaron un aviso o una imagen/audio de un cliente, guardamos
+// a qué cliente pertenece ese mensaje. Si Aaron responde citando (swipe reply / "Responder")
+// ese mensaje puntual, WhatsApp nos manda su ID en message.context.id — con eso sabemos
+// exactamente a qué cliente reenviarle el texto que Aaron escribió, y lo manda el agente
+// (el número del negocio), no Aaron desde su número personal.
+// ============================================================
+const PENDIENTES_AARON = new Map<string, { cliente: string; timestamp: number }>();
+const VENTANA_PENDIENTES_MS = 24 * 60 * 60 * 1000; // 24 horas — Aaron puede tardar en revisar
+
+function registrarPendienteAaron(mensajeId: string | undefined, cliente: string): void {
+  if (!mensajeId) return;
+  limpiarPendientesViejos();
+  PENDIENTES_AARON.set(mensajeId, { cliente, timestamp: Date.now() });
+}
+
+function resolverClienteDePendiente(contextId: string | undefined): string | null {
+  if (!contextId) return null;
+  limpiarPendientesViejos();
+  return PENDIENTES_AARON.get(contextId)?.cliente ?? null;
+}
+
+function limpiarPendientesViejos(): void {
+  const ahora = Date.now();
+  for (const [id, info] of PENDIENTES_AARON) {
+    if (ahora - info.timestamp > VENTANA_PENDIENTES_MS) {
+      PENDIENTES_AARON.delete(id);
+    }
+  }
+}
+
+function normalizarNumero(numero: string): string {
+  return numero.replace(/\D/g, "");
+}
+
+// ============================================================
 // FUNCIÓN: avisa a Aaron por WhatsApp cuando el agente escala algo
 // ============================================================
 async function avisarAaron(numeroCliente: string, esUrgente: boolean, avisoHumano: string) {
   const prefijo = esUrgente ? "URGENTE" : "Aviso";
   const texto = `${prefijo} — Strafalaria agente\nCliente: ${numeroCliente}\n${avisoHumano}`;
-  await enviarMensajeWhatsApp(AARON_WHATSAPP_NUMBER, texto);
+  const respuesta = await enviarMensajeWhatsApp(AARON_WHATSAPP_NUMBER, texto);
+  registrarPendienteAaron(respuesta?.messages?.[0]?.id, numeroCliente);
 }
 
 // ============================================================
@@ -336,7 +373,11 @@ async function subirMediaWhatsApp(blob: Blob, mimeType: string): Promise<string>
   return data.id as string;
 }
 
-async function reenviarMediaAaron(mediaId: string, tipo: "image" | "audio"): Promise<void> {
+async function reenviarMediaAaron(
+  mediaId: string,
+  tipo: "image" | "audio",
+  numeroCliente: string
+): Promise<void> {
   const { url, mimeType } = await obtenerUrlMedia(mediaId);
   const blob = await descargarMedia(url);
   const nuevoMediaId = await subirMediaWhatsApp(blob, mimeType);
@@ -365,6 +406,7 @@ async function reenviarMediaAaron(mediaId: string, tipo: "image" | "audio"): Pro
     console.error(`No se pudo reenviar el ${tipo} a Aaron. Respuesta de Meta:`, JSON.stringify(data));
   } else {
     console.log(`${tipo} reenviado a Aaron correctamente:`, JSON.stringify(data));
+    registrarPendienteAaron(data?.messages?.[0]?.id, numeroCliente);
   }
 }
 
@@ -414,6 +456,45 @@ export async function POST(request: NextRequest) {
     }
     if (messageId) marcarComoProcesado(messageId);
 
+    // Si el mensaje viene del propio número de Aaron, no es un cliente — es él
+    // respondiendo (citando/"Responder") a un aviso o a una imagen/audio que le
+    // reenviamos. Tomamos su texto y se lo mandamos al cliente correspondiente
+    // como si lo hubiera mandado el agente (desde el número del negocio).
+    if (normalizarNumero(from) === normalizarNumero(AARON_WHATSAPP_NUMBER)) {
+      const contextId = message.context?.id as string | undefined;
+      const clienteDestino = resolverClienteDePendiente(contextId);
+
+      if (!text) {
+        await enviarMensajeWhatsApp(
+          AARON_WHATSAPP_NUMBER,
+          "Para reenviar tu respuesta al cliente mándamela en texto, citando (mantén presionado → Responder) el mensaje de la imagen/audio o el aviso que te mandé."
+        );
+        return NextResponse.json({ success: true });
+      }
+
+      if (!clienteDestino) {
+        await enviarMensajeWhatsApp(
+          AARON_WHATSAPP_NUMBER,
+          "No identifiqué a qué cliente mandar esto — responde citando (mantén presionado → Responder) el mensaje de la imagen/audio o el aviso que te reenvié, y ahí sí se la mando al cliente."
+        );
+        return NextResponse.json({ success: true });
+      }
+
+      await enviarMensajeWhatsApp(clienteDestino, text);
+
+      try {
+        const pageId = await getOrCreateContact(clienteDestino, "WhatsApp");
+        await appendMessage(pageId, "Agente", text);
+        await updateEstado(pageId, "En conversación");
+      } catch (error) {
+        console.error("No se pudo registrar en Notion la respuesta manual de Aaron:", error);
+      }
+
+      await enviarMensajeWhatsApp(AARON_WHATSAPP_NUMBER, "✅ Enviado al cliente.");
+
+      return NextResponse.json({ success: true });
+    }
+
     // El agente todavía no sabe "leer" imágenes ni audios. En vez de quedarse
     // callado (que es lo que pasaba antes: sin texto, el webhook cortaba sin
     // responder ni avisar a nadie), le avisamos al cliente que ya lo van a
@@ -439,7 +520,7 @@ export async function POST(request: NextRequest) {
 
       if (mediaId) {
         try {
-          await reenviarMediaAaron(mediaId, tipo as "image" | "audio");
+          await reenviarMediaAaron(mediaId, tipo as "image" | "audio", from);
         } catch (error) {
           console.error(`No se pudo reenviar el ${tipo} a Aaron:`, error);
           // Si el reenvío falla, al menos ya le llegó el aviso de texto de arriba.
