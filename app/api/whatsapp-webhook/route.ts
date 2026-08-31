@@ -321,18 +321,55 @@ export async function POST(request: NextRequest) {
     const from = message.from;
     const text = message.text?.body;
     const messageId = message.id as string | undefined;
-
-    if (!text) {
-      return NextResponse.json({ success: true });
-    }
+    const tipo = message.type as string | undefined; // "text", "image", "audio", "document", "video", "sticker", etc.
 
     // Si Meta reintenta la entrega de un mensaje que ya procesamos, lo ignoramos
     // para no generar (ni mandar) una segunda respuesta distinta para lo mismo.
+    // Esta validación va primero, antes de mirar el tipo de mensaje, para que
+    // también cubra imágenes/audios y no solo texto.
     if (messageId && yaFueProcesado(messageId)) {
       console.log(`Mensaje ${messageId} ya procesado, se ignora reintento de Meta.`);
       return NextResponse.json({ success: true });
     }
     if (messageId) marcarComoProcesado(messageId);
+
+    // El agente todavía no sabe "leer" imágenes ni audios. En vez de quedarse
+    // callado (que es lo que pasaba antes: sin texto, el webhook cortaba sin
+    // responder ni avisar a nadie), le avisamos al cliente que ya lo van a
+    // revisar, y te avisamos a ti (urgente, porque el cliente está esperando)
+    // para que lo veas directo en WhatsApp y respondas tú mismo.
+    if (tipo === "image" || tipo === "audio") {
+      const tipoLegible = tipo === "image" ? "una imagen" : "un audio";
+      console.log(`Mensaje multimedia (${tipo}) de ${from}`);
+
+      await enviarMensajeWhatsApp(from, "¡Recibido! Dame un momento para revisarlo bien y te contesto 🙂");
+
+      try {
+        await avisarAaron(
+          from,
+          true,
+          `El cliente mandó ${tipoLegible} que el agente todavía no puede leer — revísalo tú directo en WhatsApp y respóndele.`
+        );
+      } catch (error) {
+        console.error("No se pudo avisar a Aaron sobre el mensaje multimedia:", error);
+      }
+
+      try {
+        const pageId = await getOrCreateContact(from, "WhatsApp");
+        await appendMessage(pageId, "Cliente", tipo === "image" ? "[Imagen]" : "[Audio]");
+        await updateEstado(pageId, "Escalado a Aaron");
+      } catch (error) {
+        console.error("No se pudo registrar el mensaje multimedia en Notion:", error);
+      }
+
+      return NextResponse.json({ success: true });
+    }
+
+    if (!text) {
+      // Otro tipo de mensaje que no es texto/imagen/audio (documento, sticker, ubicación, etc.)
+      // Por ahora simplemente no respondemos nada automático, igual que antes.
+      return NextResponse.json({ success: true });
+    }
 
     console.log(`Mensaje de ${from}: ${text}`);
 
