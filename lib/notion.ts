@@ -22,6 +22,9 @@ export type EstadoContacto =
 
 export type Canal = "WhatsApp" | "Facebook" | "Instagram";
 
+// Un turno de conversación, en el formato que espera la API de mensajes de Claude.
+export type Turno = { role: "user" | "assistant"; content: string };
+
 // Busca un contacto existente por teléfono; si no existe, lo crea con Estado "Nuevo".
 // Devuelve el ID de la página de Notion (el "expediente" de ese cliente).
 export async function getOrCreateContact(telefono: string, canal: Canal): Promise<string> {
@@ -83,6 +86,57 @@ export async function appendMessage(
       "Último Mensaje": { date: { start: new Date().toISOString() } },
     },
   });
+}
+
+// Reconstruye el historial de la conversación a partir de los bloques de texto que ya
+// guardamos en la página del contacto (ver appendMessage arriba). Esto es lo que le da
+// memoria al agente: sin esto, cada mensaje nuevo se le manda a Claude aislado, como si
+// la conversación empezara de cero cada vez (por eso se veían saludos e info repetida).
+//
+// Nota de rendimiento: por ahora lee TODOS los bloques de la página y se queda con los
+// últimos `maxTurnos`. Para el volumen actual de conversaciones está bien; si más adelante
+// las conversaciones se vuelven muy largas y esto empieza a sentirse lento, vale la pena
+// mover el historial a un store dedicado (ej. Vercel KV) en vez de leerlo de Notion cada vez.
+export async function getConversationHistory(
+  pageId: string,
+  maxTurnos: number = 20
+): Promise<Turno[]> {
+  const turnos: Turno[] = [];
+  let cursor: string | undefined;
+
+  do {
+    const respuesta = await notion.blocks.children.list({
+      block_id: pageId,
+      start_cursor: cursor,
+      page_size: 100,
+    });
+
+    for (const block of respuesta.results as any[]) {
+      if (block.type !== "paragraph") continue;
+      const richText = block.paragraph?.rich_text as any[] | undefined;
+      if (!richText || richText.length === 0) continue;
+
+      const etiqueta: string = richText[0]?.plain_text ?? "";
+      const texto = richText
+        .slice(1)
+        .map((rt) => rt.plain_text ?? "")
+        .join("")
+        .trim();
+
+      if (!texto) continue;
+
+      if (etiqueta.includes("Cliente:")) {
+        turnos.push({ role: "user", content: texto });
+      } else if (etiqueta.includes("Agente:")) {
+        turnos.push({ role: "assistant", content: texto });
+      }
+    }
+
+    cursor = respuesta.has_more ? respuesta.next_cursor ?? undefined : undefined;
+  } while (cursor);
+
+  // Solo los últimos N turnos, para no inflar de más el prompt en conversaciones largas.
+  return turnos.slice(-maxTurnos);
 }
 
 export async function updateEstado(pageId: string, estado: EstadoContacto): Promise<void> {

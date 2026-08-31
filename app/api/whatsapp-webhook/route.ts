@@ -3,11 +3,13 @@ import Anthropic from "@anthropic-ai/sdk";
 import {
   getOrCreateContact,
   appendMessage,
+  getConversationHistory,
   updateEstado,
   marcarComoEstrategico,
   setPiezaDeInteres,
   setNota,
   type EstadoContacto,
+  type Turno,
 } from "@/lib/notion";
 
 const anthropic = new Anthropic({
@@ -35,6 +37,7 @@ TONO Y ESTILO:
 - Ve paso a paso: si es el primer mensaje o un saludo, responde con un saludo breve y natural, y espera a que el cliente diga qué pieza le interesa o haga una pregunta concreta antes de soltar información
 - Si el cliente hace una pregunta amplia o abierta (ej. "cuéntame de sus productos", "qué manejan"), no listes todo el catálogo de un jalón — responde corto e invítalo a precisar (qué tipo de pieza tiene en mente, para qué equipo/ocasión, etc.)
 - Prefiere mensajes de 2 a 4 líneas cortas sobre un solo párrafo largo, y cierra normalmente con una pregunta que mantenga la conversación fluyendo en vez de agotar el tema de golpe
+- IMPORTANTE: ya se te está pasando el historial completo de esta conversación como turnos previos. Léelo con atención antes de responder — nunca vuelvas a saludar como si fuera la primera vez, ni vuelvas a preguntar algo que el cliente ya te contestó antes en este mismo historial
 
 QUÉ ES STRAFALARIA:
 Joyería personalizada para el mundo deportivo, especialmente fútbol americano y flag football. Piezas hechas a la medida, no genéricas. Si te piden algo fuera de este concepto (joyería no deportiva, otro tipo de producto), debes avisar que un asesor humano tomará la conversación.
@@ -148,15 +151,52 @@ const ETAPAS_VALIDAS: EstadoContacto[] = [
 ];
 
 // ============================================================
+// DEDUPLICACIÓN DE MENSAJES
+// Meta reintenta la entrega del webhook si no le respondemos rápido (o si hay
+// cualquier hiccup de red), y eso estaba haciendo que un mismo mensaje del
+// cliente se procesara dos veces y generara dos respuestas distintas.
+// Esto vive en memoria del proceso: cubre bien los reintentos típicos (segundos
+// de diferencia, misma instancia "caliente" de Vercel). No es 100% infalible si
+// Vercel levanta una instancia nueva justo en medio, pero es la mitigación más
+// simple sin meter infraestructura nueva. Si se siguen viendo duplicados, el
+// siguiente paso sería un store persistente (ej. Vercel KV) para esto.
+// ============================================================
+const MENSAJES_PROCESADOS = new Map<string, number>();
+const VENTANA_DEDUP_MS = 5 * 60 * 1000; // 5 minutos
+
+function yaFueProcesado(messageId: string): boolean {
+  limpiarMensajesViejos();
+  return MENSAJES_PROCESADOS.has(messageId);
+}
+
+function marcarComoProcesado(messageId: string): void {
+  MENSAJES_PROCESADOS.set(messageId, Date.now());
+}
+
+function limpiarMensajesViejos(): void {
+  const ahora = Date.now();
+  for (const [id, timestamp] of MENSAJES_PROCESADOS) {
+    if (ahora - timestamp > VENTANA_DEDUP_MS) {
+      MENSAJES_PROCESADOS.delete(id);
+    }
+  }
+}
+
+// ============================================================
 // FUNCIÓN: genera la respuesta usando Claude (JSON estructurado:
 // mensaje para el cliente + si hay que avisarle a Aaron)
+// Ahora recibe también el historial de la conversación, para que el modelo
+// tenga contexto de todo lo ya hablado y no responda como si fuera la primera vez.
 // ============================================================
-async function generarRespuesta(mensajeCliente: string): Promise<RespuestaAgente> {
+async function generarRespuesta(
+  mensajeCliente: string,
+  historial: Turno[] = []
+): Promise<RespuestaAgente> {
   const response = await anthropic.messages.create({
     model: "claude-sonnet-4-6",
     max_tokens: 600,
     system: SYSTEM_PROMPT,
-    messages: [{ role: "user", content: mensajeCliente }],
+    messages: [...historial, { role: "user", content: mensajeCliente }],
   });
 
   const textBlock = response.content.find((block) => block.type === "text");
@@ -271,12 +311,33 @@ export async function POST(request: NextRequest) {
 
     const from = message.from;
     const text = message.text?.body;
+    const messageId = message.id as string | undefined;
 
     if (!text) {
       return NextResponse.json({ success: true });
     }
 
+    // Si Meta reintenta la entrega de un mensaje que ya procesamos, lo ignoramos
+    // para no generar (ni mandar) una segunda respuesta distinta para lo mismo.
+    if (messageId && yaFueProcesado(messageId)) {
+      console.log(`Mensaje ${messageId} ya procesado, se ignora reintento de Meta.`);
+      return NextResponse.json({ success: true });
+    }
+    if (messageId) marcarComoProcesado(messageId);
+
     console.log(`Mensaje de ${from}: ${text}`);
+
+    // Obtenemos el expediente del contacto y su historial ANTES de generar la respuesta,
+    // para que el agente tenga contexto de toda la conversación y no responda como si
+    // fuera la primera vez que habla con este cliente.
+    let pageId: string | null = null;
+    let historial: Turno[] = [];
+    try {
+      pageId = await getOrCreateContact(from, "WhatsApp");
+      historial = await getConversationHistory(pageId);
+    } catch (error) {
+      console.error("No se pudo obtener el contacto/historial de Notion (se sigue sin historial):", error);
+    }
 
     const {
       respuestaCliente,
@@ -287,7 +348,7 @@ export async function POST(request: NextRequest) {
       contactoEstrategico,
       piezaInteres,
       nota,
-    } = await generarRespuesta(text);
+    } = await generarRespuesta(text, historial);
 
     // Siempre le respondemos al cliente primero: nada de lo que pase con Notion
     // debe atrasar o romper la conversación.
@@ -304,7 +365,7 @@ export async function POST(request: NextRequest) {
     // Registro en Notion (CRM) — esto es lo que Aaron puede ver casi en tiempo real.
     // Todo va en un try/catch aparte: si Notion falla, el cliente ya recibió su respuesta.
     try {
-      const pageId = await getOrCreateContact(from, "WhatsApp");
+      if (!pageId) pageId = await getOrCreateContact(from, "WhatsApp");
       await appendMessage(pageId, "Cliente", text);
       await appendMessage(pageId, "Agente", respuestaCliente);
 
