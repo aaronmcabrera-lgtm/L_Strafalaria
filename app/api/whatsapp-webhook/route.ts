@@ -288,6 +288,87 @@ async function avisarAaron(numeroCliente: string, esUrgente: boolean, avisoHuman
 }
 
 // ============================================================
+// FUNCIONES: reenviar a Aaron la imagen/audio que mandó el cliente
+// WhatsApp no deja "reenviar" directo el media ID que llegó del cliente — hay que
+// descargarlo y volver a subirlo a nombre del número del negocio antes de poder
+// mandarlo a otro número (el de Aaron).
+// ============================================================
+async function obtenerUrlMedia(mediaId: string): Promise<{ url: string; mimeType: string }> {
+  const response = await fetch(`https://graph.facebook.com/v21.0/${mediaId}`, {
+    headers: { Authorization: `Bearer ${WHATSAPP_TOKEN}` },
+  });
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(`No se pudo obtener la URL del media ${mediaId}: ${JSON.stringify(data)}`);
+  }
+  return { url: data.url, mimeType: data.mime_type };
+}
+
+async function descargarMedia(url: string): Promise<Blob> {
+  const response = await fetch(url, {
+    headers: { Authorization: `Bearer ${WHATSAPP_TOKEN}` },
+  });
+  if (!response.ok) {
+    throw new Error(`No se pudo descargar el archivo multimedia. Status: ${response.status}`);
+  }
+  return await response.blob();
+}
+
+async function subirMediaWhatsApp(blob: Blob, mimeType: string): Promise<string> {
+  const formData = new FormData();
+  formData.append("messaging_product", "whatsapp");
+  formData.append("file", blob, "archivo");
+  formData.append("type", mimeType);
+
+  const response = await fetch(
+    `https://graph.facebook.com/v21.0/${WHATSAPP_PHONE_NUMBER_ID}/media`,
+    {
+      method: "POST",
+      headers: { Authorization: `Bearer ${WHATSAPP_TOKEN}` },
+      body: formData,
+    }
+  );
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(`No se pudo subir el archivo multimedia a WhatsApp: ${JSON.stringify(data)}`);
+  }
+  return data.id as string;
+}
+
+async function reenviarMediaAaron(mediaId: string, tipo: "image" | "audio"): Promise<void> {
+  const { url, mimeType } = await obtenerUrlMedia(mediaId);
+  const blob = await descargarMedia(url);
+  const nuevoMediaId = await subirMediaWhatsApp(blob, mimeType);
+
+  const body: Record<string, any> = {
+    messaging_product: "whatsapp",
+    to: AARON_WHATSAPP_NUMBER,
+    type: tipo,
+  };
+  body[tipo] = { id: nuevoMediaId };
+
+  const response = await fetch(
+    `https://graph.facebook.com/v21.0/${WHATSAPP_PHONE_NUMBER_ID}/messages`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${WHATSAPP_TOKEN}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    }
+  );
+
+  const data = await response.json();
+  if (!response.ok) {
+    console.error(`No se pudo reenviar el ${tipo} a Aaron. Respuesta de Meta:`, JSON.stringify(data));
+  } else {
+    console.log(`${tipo} reenviado a Aaron correctamente:`, JSON.stringify(data));
+  }
+}
+
+// ============================================================
 // GET: Meta verifica el webhook una sola vez al configurarlo
 // ============================================================
 export async function GET(request: NextRequest) {
@@ -340,6 +421,8 @@ export async function POST(request: NextRequest) {
     // para que lo veas directo en WhatsApp y respondas tú mismo.
     if (tipo === "image" || tipo === "audio") {
       const tipoLegible = tipo === "image" ? "una imagen" : "un audio";
+      const mediaId: string | undefined =
+        tipo === "image" ? message.image?.id : message.audio?.id;
       console.log(`Mensaje multimedia (${tipo}) de ${from}`);
 
       await enviarMensajeWhatsApp(from, "¡Recibido! Dame un momento para revisarlo bien y te contesto 🙂");
@@ -348,10 +431,19 @@ export async function POST(request: NextRequest) {
         await avisarAaron(
           from,
           true,
-          `El cliente mandó ${tipoLegible} que el agente todavía no puede leer — revísalo tú directo en WhatsApp y respóndele.`
+          `El cliente mandó ${tipoLegible} que el agente todavía no puede leer — te la reenvío abajo, revísala y respóndele tú directo en WhatsApp.`
         );
       } catch (error) {
         console.error("No se pudo avisar a Aaron sobre el mensaje multimedia:", error);
+      }
+
+      if (mediaId) {
+        try {
+          await reenviarMediaAaron(mediaId, tipo as "image" | "audio");
+        } catch (error) {
+          console.error(`No se pudo reenviar el ${tipo} a Aaron:`, error);
+          // Si el reenvío falla, al menos ya le llegó el aviso de texto de arriba.
+        }
       }
 
       try {
