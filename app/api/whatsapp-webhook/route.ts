@@ -193,6 +193,20 @@ function limpiarMensajesViejos(): void {
   }
 }
 
+// Extrae el objeto JSON de la respuesta cruda del modelo, aunque venga envuelto en
+// ```json ... ``` o con texto suelto antes/después (el modelo debería mandar SOLO
+// JSON, pero cuando no lo hace nos quedamos con lo que hay entre la primera "{" y
+// la última "}" en vez de fallar directo).
+function extraerJSON(raw: string): string {
+  let texto = raw.replace(/```json\s*|```/g, "");
+  const inicio = texto.indexOf("{");
+  const fin = texto.lastIndexOf("}");
+  if (inicio !== -1 && fin !== -1 && fin > inicio) {
+    texto = texto.slice(inicio, fin + 1);
+  }
+  return texto.trim();
+}
+
 // ============================================================
 // FUNCIÓN: genera la respuesta usando Claude (JSON estructurado:
 // mensaje para el cliente + si hay que avisarle a Aaron)
@@ -214,8 +228,7 @@ async function generarRespuesta(
   const raw = textBlock && "text" in textBlock ? textBlock.text : "";
 
   try {
-    // Por si el modelo envuelve el JSON en ```json ... ``` a pesar de la instrucción
-    const limpio = raw.replace(/```json\s*|\s*```/g, "").trim();
+    const limpio = extraerJSON(raw);
     const parsed = JSON.parse(limpio);
     const etapa = ETAPAS_VALIDAS.includes(parsed.etapa) ? (parsed.etapa as EstadoContacto) : null;
     return {
@@ -229,14 +242,17 @@ async function generarRespuesta(
       nota: parsed.nota || "",
     };
   } catch (error) {
-    // Si el modelo no devolvió JSON válido, no perdemos el mensaje: se lo mandamos
-    // al cliente tal cual y no escalamos ni tocamos Notion (mejor no meter ruido por un error de formato).
+    // Si el modelo no devolvió JSON válido (o metió texto antes/después a pesar de la
+    // instrucción), NUNCA le mandamos ese texto crudo al cliente — puede traer el JSON
+    // interno completo (justo lo que pasó: el cliente recibió escalar/es_urgente/etc.
+    // pegados en el mensaje). En vez de eso, mandamos un mensaje genérico y escalamos
+    // a Aaron para que retome la conversación él mismo.
     console.error("No se pudo parsear la respuesta del modelo como JSON:", raw);
     return {
-      respuestaCliente: raw || "Disculpa, ¿me lo puedes repetir?",
-      escalar: false,
+      respuestaCliente: "Dame un segundo y te confirmo esa información 🙂",
+      escalar: true,
       esUrgente: false,
-      avisoHumano: "",
+      avisoHumano: `El agente tuvo un problema técnico generando la respuesta a este mensaje del cliente: "${mensajeCliente}". Revisa la conversación y respóndele tú directo.`,
       etapa: null,
       contactoEstrategico: false,
       piezaInteres: "",
