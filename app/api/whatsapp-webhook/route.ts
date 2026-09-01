@@ -292,7 +292,17 @@ async function generarRespuesta(
     // sin nada. Con este try/catch, cualquier falla de la API cae en el mismo fallback
     // seguro que usamos para JSON inválido: el cliente siempre recibe algo, y Aaron
     // siempre se entera para retomar la conversación él mismo.
-    console.error("Falló la llamada a la API de Claude generando la respuesta:", error);
+    // OJO: si aquí se imprime el objeto "error" completo, el visor de logs de Vercel
+    // colapsa los campos anidados (se ve como "error: {…}") y no deja ver el mensaje real.
+    // Por eso extraemos y aplanamos a texto el mensaje/status/cuerpo del error de la API
+    // de Anthropic explícitamente, para que quede legible de un jalón en los logs.
+    const detalleError =
+      error instanceof Anthropic.APIError
+        ? `status=${error.status} name=${error.name} message=${error.message}`
+        : error instanceof Error
+        ? `${error.name}: ${error.message}`
+        : String(error);
+    console.error("Falló la llamada a la API de Claude generando la respuesta:", detalleError);
     return respuestaDeEmergencia(mensajeCliente, "no se pudo generar la respuesta");
   }
 
