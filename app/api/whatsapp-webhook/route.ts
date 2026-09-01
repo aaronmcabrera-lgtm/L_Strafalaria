@@ -379,7 +379,8 @@ async function subirMediaWhatsApp(blob: Blob, mimeType: string): Promise<string>
 async function reenviarMediaAaron(
   mediaId: string,
   tipo: "image" | "audio",
-  numeroCliente: string
+  numeroCliente: string,
+  caption?: string
 ): Promise<void> {
   const { url, mimeType } = await obtenerUrlMedia(mediaId);
   const blob = await descargarMedia(url);
@@ -390,7 +391,8 @@ async function reenviarMediaAaron(
     to: AARON_WHATSAPP_NUMBER,
     type: tipo,
   };
-  body[tipo] = { id: nuevoMediaId };
+  // El caption solo aplica a imágenes (los audios no lo soportan en WhatsApp).
+  body[tipo] = caption && tipo === "image" ? { id: nuevoMediaId, caption } : { id: nuevoMediaId };
 
   const response = await fetch(
     `https://graph.facebook.com/v21.0/${WHATSAPP_PHONE_NUMBER_ID}/messages`,
@@ -514,7 +516,12 @@ export async function POST(request: NextRequest) {
       const tipoLegible = tipo === "image" ? "una imagen" : "un audio";
       const mediaId: string | undefined =
         tipo === "image" ? message.image?.id : message.audio?.id;
-      console.log(`Mensaje multimedia (${tipo}) de ${from}`);
+      // Solo las imágenes (y documentos/video, que todavía no manejamos) pueden traer un
+      // "caption" — el texto que el cliente escribió junto con la foto. Los audios no tienen
+      // este campo en WhatsApp. Sin esto, el caption se perdía por completo y el aviso a Aaron
+      // no traía ninguna pista de qué estaba preguntando el cliente.
+      const caption: string | undefined = tipo === "image" ? message.image?.caption : undefined;
+      console.log(`Mensaje multimedia (${tipo}) de ${from}${caption ? ` con caption: "${caption}"` : ""}`);
 
       await enviarMensajeWhatsApp(from, "¡Recibido! Dame un momento para revisarlo bien y te contesto 🙂");
 
@@ -522,7 +529,8 @@ export async function POST(request: NextRequest) {
         await avisarAaron(
           from,
           true,
-          `El cliente mandó ${tipoLegible} que el agente todavía no puede leer — te la reenvío abajo, revísala y respóndele tú directo en WhatsApp.`
+          `El cliente mandó ${tipoLegible} que el agente todavía no puede leer — te la reenvío abajo, revísala y respóndele tú directo en WhatsApp.` +
+            (caption ? `\nMensaje del cliente junto con la imagen: "${caption}"` : "")
         );
       } catch (error) {
         console.error("No se pudo avisar a Aaron sobre el mensaje multimedia:", error);
@@ -530,7 +538,7 @@ export async function POST(request: NextRequest) {
 
       if (mediaId) {
         try {
-          await reenviarMediaAaron(mediaId, tipo as "image" | "audio", from);
+          await reenviarMediaAaron(mediaId, tipo as "image" | "audio", from, caption);
         } catch (error) {
           console.error(`No se pudo reenviar el ${tipo} a Aaron:`, error);
           // Si el reenvío falla, al menos ya le llegó el aviso de texto de arriba.
@@ -539,7 +547,8 @@ export async function POST(request: NextRequest) {
 
       try {
         const pageId = await getOrCreateContact(from, "WhatsApp");
-        await appendMessage(pageId, "Cliente", tipo === "image" ? "[Imagen]" : "[Audio]");
+        const textoRegistro = tipo === "image" ? "[Imagen]" : "[Audio]";
+        await appendMessage(pageId, "Cliente", caption ? `${textoRegistro} ${caption}` : textoRegistro);
         await updateEstado(pageId, "Escalado a Aaron");
       } catch (error) {
         console.error("No se pudo registrar el mensaje multimedia en Notion:", error);
