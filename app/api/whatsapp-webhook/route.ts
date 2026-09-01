@@ -117,17 +117,15 @@ Si en la conversación el cliente menciona ser parte de un equipo/institución/c
 REGLA DE ORO: Nunca inventes información que no esté aquí. Si no sabes algo con certeza, dilo con honestidad y ofrece escalar a un humano para confirmar. Tu objetivo es resolver el 90% de las conversaciones tú mismo e inclinar hacia el cierre, pero sin arriesgar la confianza del cliente con información incorrecta.
 
 FORMATO DE RESPUESTA (OBLIGATORIO):
-Responde ÚNICAMENTE con un objeto JSON válido, sin texto antes ni después, sin markdown ni bloques de código. Debe tener exactamente esta forma:
-{
-  "respuesta_cliente": "el mensaje que se le manda al cliente por WhatsApp, en tu tono normal",
-  "escalar": true o false,
-  "es_urgente": true o false,
-  "aviso_humano": "si escalar es true: 1-2 líneas para Aaron explicando qué pasó y por qué se escala, incluyendo el número/contexto del cliente si es relevante. Si escalar es false: cadena vacía",
-  "etapa": "una de: En conversación | Cotizando | Cerca de cerrar | Cerrado - Venta | Escalado a Aaron",
-  "contacto_estrategico": true o false,
-  "pieza_interes": "descripción corta de la pieza que le interesa al cliente (ej. 'Dije número 10, baño de oro'), o cadena vacía si aún no se sabe",
-  "nota": "algo puntual que Aaron debería saber de este mensaje (ej. 'pidió factura', 'cambió de número'), o cadena vacía si no aplica"
-}
+SIEMPRE debes usar la herramienta "responder_cliente" para entregar tu respuesta — nunca respondas en texto libre. Estos son los campos que le tienes que llenar:
+- respuesta_cliente: el mensaje que se le manda al cliente por WhatsApp, en tu tono normal
+- escalar: true o false
+- es_urgente: true o false
+- aviso_humano: si escalar es true: 1-2 líneas para Aaron explicando qué pasó y por qué se escala, incluyendo el número/contexto del cliente si es relevante. Si escalar es false: cadena vacía
+- etapa: una de: En conversación | Cotizando | Cerca de cerrar | Cerrado - Venta | Escalado a Aaron
+- contacto_estrategico: true o false
+- pieza_interes: descripción corta de la pieza que le interesa al cliente (ej. 'Dije número 10, baño de oro'), o cadena vacía si aún no se sabe
+- nota: algo puntual que Aaron debería saber de este mensaje (ej. 'pidió factura', 'cambió de número'), o cadena vacía si no aplica
 
 Guía para "etapa" (así se refleja el pipeline de Notion, úsalo con criterio):
 - "En conversación": plática normal, aún sin cotización concreta
@@ -193,23 +191,10 @@ function limpiarMensajesViejos(): void {
   }
 }
 
-// Extrae el objeto JSON de la respuesta cruda del modelo, aunque venga envuelto en
-// ```json ... ``` o con texto suelto antes/después (el modelo debería mandar SOLO
-// JSON, pero cuando no lo hace nos quedamos con lo que hay entre la primera "{" y
-// la última "}" en vez de fallar directo).
-function extraerJSON(raw: string): string {
-  let texto = raw.replace(/```json\s*|```/g, "");
-  const inicio = texto.indexOf("{");
-  const fin = texto.lastIndexOf("}");
-  if (inicio !== -1 && fin !== -1 && fin > inicio) {
-    texto = texto.slice(inicio, fin + 1);
-  }
-  return texto.trim();
-}
-
 // Fallback único y centralizado: se usa tanto si Claude nunca contesta (falla la llamada
-// a la API) como si contesta pero no en JSON válido. En ambos casos el cliente NUNCA se
-// queda sin nada — recibe un mensaje genérico y Aaron recibe el aviso para retomar él.
+// a la API) como si contesta pero sin la información estructurada esperada. En ambos casos
+// el cliente NUNCA se queda sin nada — recibe un mensaje genérico y Aaron recibe el aviso
+// para retomar él.
 function respuestaDeEmergencia(mensajeCliente: string, motivo: string): RespuestaAgente {
   return {
     respuestaCliente: "Dame un segundo y te confirmo esa información 🙂",
@@ -247,7 +232,85 @@ function normalizarHistorial(turnos: Turno[]): Turno[] {
 }
 
 // ============================================================
-// FUNCIÓN: genera la respuesta usando Claude (JSON estructurado:
+// HERRAMIENTA (tool use) que fuerza a Claude a devolver la respuesta ya
+// estructurada, en vez de pedirle "responde solo con JSON" en texto plano.
+//
+// Antes usábamos la técnica de "prefill" (mandar un turno assistant con
+// contenido "{" para forzar que la continuación fuera JSON). Se descubrió
+// en producción que el modelo "claude-sonnet-4-6" NO SOPORTA prefill del
+// turno assistant — la API rechazaba la llamada completa con:
+//   400 invalid_request_error: "This model does not support assistant
+//   message prefill. The conversation must end with a user message."
+// Como esa llamada fallaba en el 100% de los mensajes reales de clientes
+// (no solo en el caso raro de "roles must alternate"), el agente se estaba
+// quedando sin poder generar NINGUNA respuesta.
+//
+// El reemplazo correcto no es volver a pedir JSON en texto libre (eso es lo
+// que ya nos había mordido antes: formato roto, JSON crudo filtrado al
+// cliente, etc.) sino usar tool use forzado: le damos a Claude una única
+// herramienta con el schema exacto que necesitamos y lo obligamos a
+// "llamarla" (tool_choice). La API garantiza que el input de la herramienta
+// cumple el schema — ya no hay que parsear texto ni adivinar si vino
+// envuelto en ```json ni nada por el estilo.
+// ============================================================
+const RESPUESTA_TOOL = {
+  name: "responder_cliente",
+  description:
+    "Registra la respuesta que se le manda al cliente por WhatsApp junto con la información estructurada para el CRM de Notion y para decidir si hay que avisarle a Aaron.",
+  input_schema: {
+    type: "object" as const,
+    properties: {
+      respuesta_cliente: {
+        type: "string",
+        description: "El mensaje que se le manda al cliente por WhatsApp, en el tono normal del agente.",
+      },
+      escalar: {
+        type: "boolean",
+        description: "true si hay que avisarle a Aaron de este mensaje.",
+      },
+      es_urgente: {
+        type: "boolean",
+        description:
+          "Solo puede ser true si escalar también es true, y únicamente en los casos marcados como urgentes en las instrucciones (venta cerca de cerrarse en pieza personalizada, en oro con señal real de compra, o solicitud de MSI en Más que Joyas).",
+      },
+      aviso_humano: {
+        type: "string",
+        description:
+          "Si escalar es true: 1-2 líneas para Aaron explicando qué pasó y por qué se escala, incluyendo contexto del cliente si es relevante. Si escalar es false: cadena vacía.",
+      },
+      etapa: {
+        type: "string",
+        enum: ETAPAS_VALIDAS,
+        description: "Etapa del pipeline de ventas en Notion que mejor refleja este momento de la conversación.",
+      },
+      contacto_estrategico: {
+        type: "boolean",
+        description: "true si este contacto parece ser un contacto estratégico (ver instrucciones).",
+      },
+      pieza_interes: {
+        type: "string",
+        description: "Descripción corta de la pieza que le interesa al cliente (ej. 'Dije número 10, baño de oro'), o cadena vacía si aún no se sabe.",
+      },
+      nota: {
+        type: "string",
+        description: "Algo puntual que Aaron debería saber de este mensaje (ej. 'pidió factura'), o cadena vacía si no aplica.",
+      },
+    },
+    required: [
+      "respuesta_cliente",
+      "escalar",
+      "es_urgente",
+      "aviso_humano",
+      "etapa",
+      "contacto_estrategico",
+      "pieza_interes",
+      "nota",
+    ],
+  },
+};
+
+// ============================================================
+// FUNCIÓN: genera la respuesta usando Claude (JSON estructurado vía tool use:
 // mensaje para el cliente + si hay que avisarle a Aaron)
 // Ahora recibe también el historial de la conversación, para que el modelo
 // tenga contexto de todo lo ya hablado y no responda como si fuera la primera vez.
@@ -263,34 +326,31 @@ async function generarRespuesta(
     { role: "user", content: mensajeCliente },
   ]);
 
-  let raw: string;
+  let input: Record<string, any>;
   try {
     const response = await anthropic.messages.create({
       model: "claude-sonnet-4-6",
       max_tokens: 600,
       system: SYSTEM_PROMPT,
-      messages: [
-        ...mensajes,
-        // "Prefill": le damos ya escrito el primer carácter de su propia respuesta.
-        // Como el modelo solo puede CONTINUAR desde ahí (no puede borrar lo ya puesto),
-        // queda prácticamente forzado a completar un objeto JSON en vez de desviarse a
-        // texto plano — el historial de la conversación (en texto plano, porque es lo que
-        // de verdad se mandó al cliente) a veces lo arrastraba a responder también en texto plano.
-        { role: "assistant", content: "{" },
-      ],
+      messages: mensajes,
+      tools: [RESPUESTA_TOOL],
+      // Forzamos a que la ÚNICA salida posible sea una llamada a nuestra herramienta —
+      // así la API garantiza el schema completo, sin depender de que el modelo "decida"
+      // usarla ni de que el texto libre venga en JSON válido.
+      tool_choice: { type: "tool", name: "responder_cliente" },
     });
 
-    const textBlock = response.content.find((block) => block.type === "text");
-    const continuacion = textBlock && "text" in textBlock ? textBlock.text : "";
-    // Reconstruimos el JSON completo pegando de vuelta el "{" que le dimos de prefill
-    // (Claude solo regresa lo que escribió DESPUÉS de ese punto de partida).
-    raw = "{" + continuacion;
+    const toolBlock = response.content.find((block) => block.type === "tool_use");
+    if (!toolBlock || !("input" in toolBlock)) {
+      throw new Error("La respuesta de Claude no incluyó una llamada a la herramienta responder_cliente.");
+    }
+    input = toolBlock.input as Record<string, any>;
   } catch (error) {
     // CRÍTICO: antes esta llamada no estaba protegida — si fallaba (rate limit, error de
-    // roles, timeout, lo que sea), la excepción se propagaba sin capturar por todo el
-    // handler del webhook y el cliente se quedaba completamente sin respuesta, sin aviso,
-    // sin nada. Con este try/catch, cualquier falla de la API cae en el mismo fallback
-    // seguro que usamos para JSON inválido: el cliente siempre recibe algo, y Aaron
+    // roles, modelo sin soporte para algo que le pedíamos, timeout, lo que sea), la excepción
+    // se propagaba sin capturar por todo el handler del webhook y el cliente se quedaba
+    // completamente sin respuesta, sin aviso, sin nada. Con este try/catch, cualquier falla
+    // de la API cae en el mismo fallback seguro: el cliente siempre recibe algo, y Aaron
     // siempre se entera para retomar la conversación él mismo.
     // OJO: si aquí se imprime el objeto "error" completo, el visor de logs de Vercel
     // colapsa los campos anidados (se ve como "error: {…}") y no deja ver el mensaje real.
@@ -307,26 +367,22 @@ async function generarRespuesta(
   }
 
   try {
-    const limpio = extraerJSON(raw);
-    const parsed = JSON.parse(limpio);
-    const etapa = ETAPAS_VALIDAS.includes(parsed.etapa) ? (parsed.etapa as EstadoContacto) : null;
+    const etapa = ETAPAS_VALIDAS.includes(input.etapa) ? (input.etapa as EstadoContacto) : null;
     return {
-      respuestaCliente: parsed.respuesta_cliente || "Disculpa, ¿me lo puedes repetir?",
-      escalar: Boolean(parsed.escalar),
-      esUrgente: Boolean(parsed.escalar) && Boolean(parsed.es_urgente),
-      avisoHumano: parsed.aviso_humano || "",
+      respuestaCliente: input.respuesta_cliente || "Disculpa, ¿me lo puedes repetir?",
+      escalar: Boolean(input.escalar),
+      esUrgente: Boolean(input.escalar) && Boolean(input.es_urgente),
+      avisoHumano: input.aviso_humano || "",
       etapa,
-      contactoEstrategico: Boolean(parsed.contacto_estrategico),
-      piezaInteres: parsed.pieza_interes || "",
-      nota: parsed.nota || "",
+      contactoEstrategico: Boolean(input.contacto_estrategico),
+      piezaInteres: input.pieza_interes || "",
+      nota: input.nota || "",
     };
   } catch (error) {
-    // Si el modelo no devolvió JSON válido (o metió texto antes/después a pesar de la
-    // instrucción), NUNCA le mandamos ese texto crudo al cliente — puede traer el JSON
-    // interno completo (justo lo que pasó: el cliente recibió escalar/es_urgente/etc.
-    // pegados en el mensaje). En vez de eso, mandamos un mensaje genérico y escalamos
-    // a Aaron para que retome la conversación él mismo.
-    console.error("No se pudo parsear la respuesta del modelo como JSON:", raw);
+    // Defensivo: con tool use forzado esto ya no debería pasar (la API garantiza el schema),
+    // pero por si acaso el objeto viniera con una forma inesperada, nunca le mandamos ese
+    // contenido crudo al cliente — mandamos el mensaje genérico y escalamos a Aaron.
+    console.error("No se pudo interpretar el resultado de la herramienta responder_cliente:", input);
     return respuestaDeEmergencia(mensajeCliente, "formato de respuesta inválido");
   }
 }
