@@ -207,6 +207,45 @@ function extraerJSON(raw: string): string {
   return texto.trim();
 }
 
+// Fallback único y centralizado: se usa tanto si Claude nunca contesta (falla la llamada
+// a la API) como si contesta pero no en JSON válido. En ambos casos el cliente NUNCA se
+// queda sin nada — recibe un mensaje genérico y Aaron recibe el aviso para retomar él.
+function respuestaDeEmergencia(mensajeCliente: string, motivo: string): RespuestaAgente {
+  return {
+    respuestaCliente: "Dame un segundo y te confirmo esa información 🙂",
+    escalar: true,
+    esUrgente: false,
+    avisoHumano: `El agente tuvo un problema técnico (${motivo}) generando la respuesta a este mensaje del cliente: "${mensajeCliente}". Revisa la conversación y respóndele tú directo.`,
+    etapa: null,
+    contactoEstrategico: false,
+    piezaInteres: "",
+    nota: "",
+  };
+}
+
+// La API de Claude exige que los turnos de "messages" alternen user/assistant estrictamente.
+// Nuestro historial viene reconstruido desde bloques de texto en Notion (ver
+// getConversationHistory en lib/notion.ts), y ahí SÍ pueden quedar dos turnos seguidos del
+// mismo rol — el caso típico es cuando Aaron responde manualmente citando un aviso: eso
+// agrega un bloque "Agente" en Notion que no necesariamente viene emparejado con un bloque
+// "Cliente" nuevo antes que el siguiente "Agente". Si eso se manda tal cual a la API, Claude
+// responde con un error 400 ("roles must alternate") — y como esa llamada no estaba protegida,
+// el webhook completo se caía y el cliente se quedaba sin respuesta. Aquí fusionamos turnos
+// consecutivos del mismo rol (concatenando su texto) para garantizar alternancia antes de
+// mandar cualquier cosa a la API.
+function normalizarHistorial(turnos: Turno[]): Turno[] {
+  const normalizado: Turno[] = [];
+  for (const turno of turnos) {
+    const anterior = normalizado[normalizado.length - 1];
+    if (anterior && anterior.role === turno.role) {
+      anterior.content = `${anterior.content}\n${turno.content}`;
+    } else {
+      normalizado.push({ ...turno });
+    }
+  }
+  return normalizado;
+}
+
 // ============================================================
 // FUNCIÓN: genera la respuesta usando Claude (JSON estructurado:
 // mensaje para el cliente + si hay que avisarle a Aaron)
@@ -217,27 +256,45 @@ async function generarRespuesta(
   mensajeCliente: string,
   historial: Turno[] = []
 ): Promise<RespuestaAgente> {
-  const response = await anthropic.messages.create({
-    model: "claude-sonnet-4-6",
-    max_tokens: 600,
-    system: SYSTEM_PROMPT,
-    messages: [
-      ...historial,
-      { role: "user", content: mensajeCliente },
-      // "Prefill": le damos ya escrito el primer carácter de su propia respuesta.
-      // Como el modelo solo puede CONTINUAR desde ahí (no puede borrar lo ya puesto),
-      // queda prácticamente forzado a completar un objeto JSON en vez de desviarse a
-      // texto plano — el historial de la conversación (en texto plano, porque es lo que
-      // de verdad se mandó al cliente) a veces lo arrastraba a responder también en texto plano.
-      { role: "assistant", content: "{" },
-    ],
-  });
+  // Normalizamos el historial + el mensaje nuevo del cliente ANTES de mandarlo a la API,
+  // para blindar contra el error de "roles must alternate" descrito arriba.
+  const mensajes = normalizarHistorial([
+    ...historial,
+    { role: "user", content: mensajeCliente },
+  ]);
 
-  const textBlock = response.content.find((block) => block.type === "text");
-  const continuacion = textBlock && "text" in textBlock ? textBlock.text : "";
-  // Reconstruimos el JSON completo pegando de vuelta el "{" que le dimos de prefill
-  // (Claude solo regresa lo que escribió DESPUÉS de ese punto de partida).
-  const raw = "{" + continuacion;
+  let raw: string;
+  try {
+    const response = await anthropic.messages.create({
+      model: "claude-sonnet-4-6",
+      max_tokens: 600,
+      system: SYSTEM_PROMPT,
+      messages: [
+        ...mensajes,
+        // "Prefill": le damos ya escrito el primer carácter de su propia respuesta.
+        // Como el modelo solo puede CONTINUAR desde ahí (no puede borrar lo ya puesto),
+        // queda prácticamente forzado a completar un objeto JSON en vez de desviarse a
+        // texto plano — el historial de la conversación (en texto plano, porque es lo que
+        // de verdad se mandó al cliente) a veces lo arrastraba a responder también en texto plano.
+        { role: "assistant", content: "{" },
+      ],
+    });
+
+    const textBlock = response.content.find((block) => block.type === "text");
+    const continuacion = textBlock && "text" in textBlock ? textBlock.text : "";
+    // Reconstruimos el JSON completo pegando de vuelta el "{" que le dimos de prefill
+    // (Claude solo regresa lo que escribió DESPUÉS de ese punto de partida).
+    raw = "{" + continuacion;
+  } catch (error) {
+    // CRÍTICO: antes esta llamada no estaba protegida — si fallaba (rate limit, error de
+    // roles, timeout, lo que sea), la excepción se propagaba sin capturar por todo el
+    // handler del webhook y el cliente se quedaba completamente sin respuesta, sin aviso,
+    // sin nada. Con este try/catch, cualquier falla de la API cae en el mismo fallback
+    // seguro que usamos para JSON inválido: el cliente siempre recibe algo, y Aaron
+    // siempre se entera para retomar la conversación él mismo.
+    console.error("Falló la llamada a la API de Claude generando la respuesta:", error);
+    return respuestaDeEmergencia(mensajeCliente, "no se pudo generar la respuesta");
+  }
 
   try {
     const limpio = extraerJSON(raw);
@@ -260,16 +317,7 @@ async function generarRespuesta(
     // pegados en el mensaje). En vez de eso, mandamos un mensaje genérico y escalamos
     // a Aaron para que retome la conversación él mismo.
     console.error("No se pudo parsear la respuesta del modelo como JSON:", raw);
-    return {
-      respuestaCliente: "Dame un segundo y te confirmo esa información 🙂",
-      escalar: true,
-      esUrgente: false,
-      avisoHumano: `El agente tuvo un problema técnico generando la respuesta a este mensaje del cliente: "${mensajeCliente}". Revisa la conversación y respóndele tú directo.`,
-      etapa: null,
-      contactoEstrategico: false,
-      piezaInteres: "",
-      nota: "",
-    };
+    return respuestaDeEmergencia(mensajeCliente, "formato de respuesta inválido");
   }
 }
 
