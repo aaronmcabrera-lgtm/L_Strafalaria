@@ -221,11 +221,23 @@ async function generarRespuesta(
     model: "claude-sonnet-4-6",
     max_tokens: 600,
     system: SYSTEM_PROMPT,
-    messages: [...historial, { role: "user", content: mensajeCliente }],
+    messages: [
+      ...historial,
+      { role: "user", content: mensajeCliente },
+      // "Prefill": le damos ya escrito el primer carácter de su propia respuesta.
+      // Como el modelo solo puede CONTINUAR desde ahí (no puede borrar lo ya puesto),
+      // queda prácticamente forzado a completar un objeto JSON en vez de desviarse a
+      // texto plano — el historial de la conversación (en texto plano, porque es lo que
+      // de verdad se mandó al cliente) a veces lo arrastraba a responder también en texto plano.
+      { role: "assistant", content: "{" },
+    ],
   });
 
   const textBlock = response.content.find((block) => block.type === "text");
-  const raw = textBlock && "text" in textBlock ? textBlock.text : "";
+  const continuacion = textBlock && "text" in textBlock ? textBlock.text : "";
+  // Reconstruimos el JSON completo pegando de vuelta el "{" que le dimos de prefill
+  // (Claude solo regresa lo que escribió DESPUÉS de ese punto de partida).
+  const raw = "{" + continuacion;
 
   try {
     const limpio = extraerJSON(raw);
