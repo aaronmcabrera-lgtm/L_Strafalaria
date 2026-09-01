@@ -311,7 +311,15 @@ function limpiarPendientesViejos(): void {
 }
 
 function normalizarNumero(numero: string): string {
-  return numero.replace(/\D/g, "");
+  const soloDigitos = numero.replace(/\D/g, "");
+  // WhatsApp entrega los números mexicanos con un "1" extra después del código de
+  // país 52 en los mensajes ENTRANTES (ej. "5215510141024"), pero ese "1" no se usa
+  // al enviar (ej. "525510141024"). Sin esto, el número de Aaron nunca hacía match
+  // consigo mismo y sus respuestas se procesaban como si fueran de un cliente nuevo.
+  if (soloDigitos.startsWith("521") && soloDigitos.length === 13) {
+    return "52" + soloDigitos.slice(3);
+  }
+  return soloDigitos;
 }
 
 // ============================================================
