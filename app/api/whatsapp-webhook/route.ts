@@ -8,6 +8,8 @@ import {
   marcarComoEstrategico,
   setPiezaDeInteres,
   setNota,
+  setUltimoMensajeIdAaron,
+  buscarClientePorMensajeIdAaron,
   type EstadoContacto,
   type Turno,
 } from "@/lib/notion";
@@ -280,33 +282,19 @@ async function enviarMensajeWhatsApp(numeroDestino: string, texto: string) {
 }
 // ============================================================
 // RELEVO DE RESPUESTAS DE AARON
-// Cuando le reenviamos a Aaron un aviso o una imagen/audio de un cliente, guardamos
-// a qué cliente pertenece ese mensaje. Si Aaron responde citando (swipe reply / "Responder")
-// ese mensaje puntual, WhatsApp nos manda su ID en message.context.id — con eso sabemos
-// exactamente a qué cliente reenviarle el texto que Aaron escribió, y lo manda el agente
-// (el número del negocio), no Aaron desde su número personal.
+// Cuando le reenviamos a Aaron un aviso o una imagen/audio de un cliente, guardamos en
+// Notion (no en memoria — ver lib/notion.ts) a qué cliente pertenece ese mensaje. Si Aaron
+// responde citando (swipe reply / "Responder") ese mensaje puntual, WhatsApp nos manda su ID
+// en message.context.id; buscamos ese ID en Notion para saber a qué cliente reenviarle el
+// texto que Aaron escribió, y lo manda el agente (el número del negocio), no Aaron desde el suyo.
 // ============================================================
-const PENDIENTES_AARON = new Map<string, { cliente: string; timestamp: number }>();
-const VENTANA_PENDIENTES_MS = 24 * 60 * 60 * 1000; // 24 horas — Aaron puede tardar en revisar
-
-function registrarPendienteAaron(mensajeId: string | undefined, cliente: string): void {
-  if (!mensajeId) return;
-  limpiarPendientesViejos();
-  PENDIENTES_AARON.set(mensajeId, { cliente, timestamp: Date.now() });
-}
-
-function resolverClienteDePendiente(contextId: string | undefined): string | null {
+async function resolverClienteDePendiente(contextId: string | undefined): Promise<string | null> {
   if (!contextId) return null;
-  limpiarPendientesViejos();
-  return PENDIENTES_AARON.get(contextId)?.cliente ?? null;
-}
-
-function limpiarPendientesViejos(): void {
-  const ahora = Date.now();
-  for (const [id, info] of PENDIENTES_AARON) {
-    if (ahora - info.timestamp > VENTANA_PENDIENTES_MS) {
-      PENDIENTES_AARON.delete(id);
-    }
+  try {
+    return await buscarClientePorMensajeIdAaron(contextId);
+  } catch (error) {
+    console.error("No se pudo resolver a qué cliente pertenece el mensaje citado:", error);
+    return null;
   }
 }
 
@@ -329,7 +317,14 @@ async function avisarAaron(numeroCliente: string, esUrgente: boolean, avisoHuman
   const prefijo = esUrgente ? "URGENTE" : "Aviso";
   const texto = `${prefijo} — Strafalaria agente\nCliente: ${numeroCliente}\n${avisoHumano}`;
   const respuesta = await enviarMensajeWhatsApp(AARON_WHATSAPP_NUMBER, texto);
-  registrarPendienteAaron(respuesta?.messages?.[0]?.id, numeroCliente);
+  const mensajeId = respuesta?.messages?.[0]?.id;
+  if (mensajeId) {
+    try {
+      await setUltimoMensajeIdAaron(numeroCliente, mensajeId);
+    } catch (error) {
+      console.error("No se pudo guardar en Notion el ID del aviso a Aaron:", error);
+    }
+  }
 }
 
 // ============================================================
@@ -414,7 +409,14 @@ async function reenviarMediaAaron(
     console.error(`No se pudo reenviar el ${tipo} a Aaron. Respuesta de Meta:`, JSON.stringify(data));
   } else {
     console.log(`${tipo} reenviado a Aaron correctamente:`, JSON.stringify(data));
-    registrarPendienteAaron(data?.messages?.[0]?.id, numeroCliente);
+    const mensajeId = data?.messages?.[0]?.id;
+    if (mensajeId) {
+      try {
+        await setUltimoMensajeIdAaron(numeroCliente, mensajeId);
+      } catch (error) {
+        console.error("No se pudo guardar en Notion el ID del media reenviado a Aaron:", error);
+      }
+    }
   }
 }
 
@@ -470,7 +472,7 @@ export async function POST(request: NextRequest) {
     // como si lo hubiera mandado el agente (desde el número del negocio).
     if (normalizarNumero(from) === normalizarNumero(AARON_WHATSAPP_NUMBER)) {
       const contextId = message.context?.id as string | undefined;
-      const clienteDestino = resolverClienteDePendiente(contextId);
+      const clienteDestino = await resolverClienteDePendiente(contextId);
 
       if (!text) {
         await enviarMensajeWhatsApp(

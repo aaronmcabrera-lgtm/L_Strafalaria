@@ -139,6 +139,46 @@ export async function getConversationHistory(
   return turnos.slice(-maxTurnos);
 }
 
+// ============================================================
+// RELEVO DE RESPUESTAS DE AARON
+// Cuando le reenviamos a Aaron un aviso o una imagen/audio de un cliente, guardamos el ID
+// de ESE mensaje de WhatsApp en la propiedad "Último Mensaje ID Aaron" de la página de ese
+// mismo cliente. Si luego Aaron responde citando ese mensaje puntual, buscamos en Notion qué
+// página tiene ese ID guardado, y ahí sacamos el teléfono al que hay que reenviar su respuesta.
+//
+// Esto vive en Notion (no en memoria del proceso) a propósito: Vercel puede levantar una
+// instancia nueva del servidor entre que se manda el aviso y que Aaron contesta, y un mapa en
+// memoria se pierde en ese caso. Notion persiste sin importar cuántas instancias haya.
+//
+// Requiere que la base "Contactos Agente de Ventas" tenga una propiedad de texto llamada
+// exactamente "Último Mensaje ID Aaron" (tipo Texto).
+// ============================================================
+export async function setUltimoMensajeIdAaron(telefono: string, mensajeId: string): Promise<void> {
+  const pageId = await getOrCreateContact(telefono, "WhatsApp");
+  await notion.pages.update({
+    page_id: pageId,
+    properties: {
+      "Último Mensaje ID Aaron": { rich_text: [{ text: { content: mensajeId } }] },
+    },
+  });
+}
+
+export async function buscarClientePorMensajeIdAaron(mensajeId: string): Promise<string | null> {
+  const busqueda = await notion.dataSources.query({
+    data_source_id: DATA_SOURCE_ID,
+    filter: {
+      property: "Último Mensaje ID Aaron",
+      rich_text: { equals: mensajeId },
+    },
+  });
+
+  if (busqueda.results.length === 0) return null;
+
+  const pagina = busqueda.results[0] as any;
+  const telefono = pagina.properties?.["Teléfono"]?.phone_number as string | undefined;
+  return telefono ?? null;
+}
+
 export async function updateEstado(pageId: string, estado: EstadoContacto): Promise<void> {
   await notion.pages.update({
     page_id: pageId,
