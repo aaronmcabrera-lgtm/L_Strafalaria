@@ -614,39 +614,55 @@ export async function POST(request: NextRequest) {
     // respondiendo (citando/"Responder") a un aviso o a una imagen/audio que le
     // reenviamos. Tomamos su texto y se lo mandamos al cliente correspondiente
     // como si lo hubiera mandado el agente (desde el número del negocio).
+    // Si el mensaje viene del propio número de Aaron Y está citando (swipe reply /
+    // "Responder") un mensaje puntual, es un intento de RELEVO: está respondiendo a un
+    // aviso o a una imagen/audio que le reenviamos, y quiere que el agente le pase ese
+    // texto al cliente correspondiente. Si en cambio escribe SIN citar nada, no lo tratamos
+    // como relevo — lo dejamos seguir el flujo normal más abajo (como si fuera un mensaje
+    // de un cliente cualquiera), para que pueda probar el agente de ventas completo
+    // chateando directo con el número del negocio desde su propio WhatsApp, sin tener que
+    // copiar/pegar mensajes a otro lado. Antes CUALQUIER mensaje suyo (citara o no) entraba
+    // aquí y, si no citaba nada, solo recibía "no identifiqué a qué cliente mandar esto" —
+    // bloqueando por completo esta forma de probar el agente.
     if (normalizarNumero(from) === normalizarNumero(AARON_WHATSAPP_NUMBER)) {
       const contextId = message.context?.id as string | undefined;
-      const clienteDestino = await resolverClienteDePendiente(contextId);
 
-      if (!text) {
-        await enviarMensajeWhatsApp(
-          AARON_WHATSAPP_NUMBER,
-          "Para reenviar tu respuesta al cliente mándamela en texto, citando (mantén presionado → Responder) el mensaje de la imagen/audio o el aviso que te mandé."
-        );
+      if (contextId) {
+        const clienteDestino = await resolverClienteDePendiente(contextId);
+
+        if (!text) {
+          await enviarMensajeWhatsApp(
+            AARON_WHATSAPP_NUMBER,
+            "Para reenviar tu respuesta al cliente mándamela en texto, citando (mantén presionado → Responder) el mensaje de la imagen/audio o el aviso que te mandé."
+          );
+          return NextResponse.json({ success: true });
+        }
+
+        if (!clienteDestino) {
+          await enviarMensajeWhatsApp(
+            AARON_WHATSAPP_NUMBER,
+            "No identifiqué a qué cliente mandar esto — responde citando (mantén presionado → Responder) el mensaje de la imagen/audio o el aviso que te reenvié, y ahí sí se la mando al cliente."
+          );
+          return NextResponse.json({ success: true });
+        }
+
+        await enviarMensajeWhatsApp(clienteDestino, text);
+
+        try {
+          const pageId = await getOrCreateContact(clienteDestino, "WhatsApp");
+          await appendMessage(pageId, "Agente", text);
+          await updateEstado(pageId, "En conversación");
+        } catch (error) {
+          console.error("No se pudo registrar en Notion la respuesta manual de Aaron:", error);
+        }
+
+        await enviarMensajeWhatsApp(AARON_WHATSAPP_NUMBER, "✅ Enviado al cliente.");
+
         return NextResponse.json({ success: true });
       }
 
-      if (!clienteDestino) {
-        await enviarMensajeWhatsApp(
-          AARON_WHATSAPP_NUMBER,
-          "No identifiqué a qué cliente mandar esto — responde citando (mantén presionado → Responder) el mensaje de la imagen/audio o el aviso que te reenvié, y ahí sí se la mando al cliente."
-        );
-        return NextResponse.json({ success: true });
-      }
-
-      await enviarMensajeWhatsApp(clienteDestino, text);
-
-      try {
-        const pageId = await getOrCreateContact(clienteDestino, "WhatsApp");
-        await appendMessage(pageId, "Agente", text);
-        await updateEstado(pageId, "En conversación");
-      } catch (error) {
-        console.error("No se pudo registrar en Notion la respuesta manual de Aaron:", error);
-      }
-
-      await enviarMensajeWhatsApp(AARON_WHATSAPP_NUMBER, "✅ Enviado al cliente.");
-
-      return NextResponse.json({ success: true });
+      // Sin cita: no hacemos "return" aquí — el código sigue más abajo y trata este
+      // mensaje como el de cualquier cliente (modo prueba).
     }
 
     // El agente todavía no sabe "leer" imágenes ni audios. En vez de quedarse
