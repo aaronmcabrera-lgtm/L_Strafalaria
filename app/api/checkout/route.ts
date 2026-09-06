@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
     const { numero, material, precio, esApartado } = await request.json();
     const preference = new Preference(client);
 
-    const result = await preference.create({ 
+    const result = await preference.create({
       body: {
         items: [{
           id: esApartado ? `apartado-${numero}` : `compra-${numero}`,
@@ -19,18 +19,18 @@ export async function POST(request: NextRequest) {
           unit_price: Number(precio),
           currency_id: "MXN",
         }],
-        // Habilitamos cuotas (hasta 12). 
+        // Habilitamos cuotas (hasta 12).
         // Mercado Pago mostrará las opciones disponibles según los convenios de tu cuenta.
         payment_methods: {
           installments: 12
         },
         auto_return: "approved",
         back_urls: {
-          success: "https://strafalaria.mx",
-          failure: "https://strafalaria.mx",
-          pending: "https://strafalaria.mx"
+          success: "https://strafalaria.mx/gracias",
+          failure: "https://strafalaria.mx/gracias",
+          pending: "https://strafalaria.mx/gracias"
         }
-      } 
+      }
     });
 
     return NextResponse.json({ success: true, initPoint: result.init_point });
