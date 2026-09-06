@@ -26,9 +26,9 @@ export async function POST(request: NextRequest) {
         },
         auto_return: "approved",
         back_urls: {
-          success: "https://strafalaria.mx/gracias",
-          failure: "https://strafalaria.mx/gracias",
-          pending: "https://strafalaria.mx/gracias"
+          success: "https://www.strafalaria.com/gracias",
+          failure: "https://www.strafalaria.com/gracias",
+          pending: "https://www.strafalaria.com/gracias"
         }
       }
     });
