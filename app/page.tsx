@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Script from "next/script";
 import TrustSection from "./components/TrustSection";
 import { TestimoniosSection } from "./components/TestimoniosSection";
+import NuevosProductosCarousel from "./components/NuevosProductosCarousel";
 
 /* Animación fade-in + zoom suave para el PromoModal */
 function PromoModalStyles() {
@@ -441,6 +442,7 @@ export default function Home() {
       window.history.replaceState({}, document.title, window.location.origin);
     }
   }, []);
+  const [mostrarSimulador, setMostrarSimulador] = useState(false);
 
   const productos = [
     { id: 1, nombre: "CREW", plata: "$3,600", bano: "$4,200" },
