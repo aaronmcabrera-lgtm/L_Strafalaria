@@ -442,6 +442,7 @@ export default function Home() {
       window.history.replaceState({}, document.title, window.location.origin);
     }
   }, []);
+
   const [mostrarSimulador, setMostrarSimulador] = useState(false);
 
   const productos = [
@@ -463,12 +464,73 @@ export default function Home() {
       <ScrollMarquee />
       <PromoModal />
 
-      <section id="simulador-section" className="relative min-h-[90vh] flex flex-col items-center justify-center px-6 bg-cover bg-center" style={{ backgroundImage: "url('/disenos/fondo-hero.jpg')" }}>
-        <div className="absolute inset-0 bg-black/70" />
+      <section id="simulador-section" className="relative min-h-[90vh] flex flex-col items-center justify-center px-6 overflow-hidden">
+        <div className="absolute top-0 left-0 right-0 h-[90vh] bg-cover bg-center" style={{ backgroundImage: "url('/disenos/fondo-hero.jpg')" }} />
+        <div className="absolute top-0 left-0 right-0 h-[90vh] bg-black/70" />
         <div className="relative z-10 text-center w-full max-w-4xl">
           <img src="/disenos/logo-strafalaria-white.svg" className="w-40 mx-auto mt-8 mb-6" alt="Strafalaria Logo" />
-          <h1 className="text-[44px] md:text-[80px] uppercase font-bold leading-tight mb-8">CONVIERTE TU NÚMERO EN JOYA</h1>
-          <Simulador />
+          <p className="text-[22px] md:text-[30px] uppercase tracking-[0.15em] text-white font-black mb-6 leading-snug">
+            Conoce nuestros productos<br />Y personalízalos
+          </p>
+
+          <div
+            className="mx-auto transition-all duration-500 ease-out"
+            style={{ width: "100%" }}
+          >
+            <NuevosProductosCarousel compact={mostrarSimulador} />
+          </div>
+
+          <div
+            className="max-w-md mx-auto px-4 overflow-hidden transition-all duration-500 ease-out"
+            style={{
+              display: "grid",
+              gridTemplateRows: mostrarSimulador ? "0fr" : "1fr",
+              opacity: mostrarSimulador ? 0 : 1,
+              marginTop: mostrarSimulador ? 0 : 24,
+            }}
+          >
+            <div className="overflow-hidden">
+              <button
+                onClick={() => setMostrarSimulador(true)}
+                aria-label="Simula tu número y gana 10%"
+                className="relative w-full group transition-transform transform hover:-translate-y-0.5"
+              >
+                <img
+                  src="/disenos/banner-simula.png"
+                  alt="Simula aquí tu número y gana 10% OFF"
+                  className="w-full h-auto rounded-2xl shadow-lg transition-all duration-300 group-hover:brightness-110 group-hover:scale-[1.02]"
+                />
+                <span className="absolute inset-0 rounded-2xl ring-2 ring-[#D4AF37]/0 group-hover:ring-[#D4AF37]/70 transition-all duration-300 pointer-events-none" />
+                <span className="absolute bottom-3 right-3 flex items-center gap-1.5 bg-black/70 backdrop-blur-sm border border-[#D4AF37]/60 text-white text-[10px] uppercase tracking-widest font-bold px-3 py-1.5 rounded-full animate-pulse">
+                  👆 Clic aquí
+                </span>
+              </button>
+              <p className="text-center text-xs text-white/50 mt-2">
+                Descarga tu diseño y compártelo para activar tu descuento
+              </p>
+            </div>
+          </div>
+
+          <div
+            className="relative max-w-md mx-auto overflow-hidden transition-all duration-500 ease-out"
+            style={{
+              display: "grid",
+              gridTemplateRows: mostrarSimulador ? "1fr" : "0fr",
+              opacity: mostrarSimulador ? 1 : 0,
+              marginTop: mostrarSimulador ? 24 : 0,
+            }}
+          >
+            <div className="overflow-hidden">
+              <button
+                onClick={() => setMostrarSimulador(false)}
+                aria-label="Minimizar simulador"
+                className="absolute -top-3 -right-3 z-20 w-8 h-8 rounded-full bg-black border border-white/20 text-white flex items-center justify-center text-sm shadow-lg hover:bg-white/10 transition"
+              >
+                ✕
+              </button>
+              <Simulador />
+            </div>
+          </div>
         </div>
       </section>
 
