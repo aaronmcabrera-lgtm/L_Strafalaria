@@ -13,7 +13,7 @@ const productos = [
   },
   {
     nombre: "Gold Helmet",
-    descripcion: "Hazlo en plata Ley .925, baño de oro y esmalte con el color de tu equipo",
+    descripcion: "En plata Ley.925, baño de oro y esmalte",
     imagen: "/productos/casco.png",
   },
   {
@@ -23,7 +23,7 @@ const productos = [
   },
   {
     nombre: "Número Personalizado",
-    descripcion: "Personaliza tu número hecho en plata Ley .925 o bañado en oro",
+    descripcion: "Personaliza tu número hecho en plata o bañado en oro",
     imagen: "/productos/numero.png",
   },
 ];
