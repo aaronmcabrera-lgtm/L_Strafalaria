@@ -5,6 +5,7 @@ import Script from "next/script";
 import TrustSection from "./components/TrustSection";
 import { TestimoniosSection } from "./components/TestimoniosSection";
 import NuevosProductosCarousel from "./components/NuevosProductosCarousel";
+import FloatingTeamTags from "./components/FloatingTeamTags";
 
 /* Animación fade-in + zoom suave para el PromoModal */
 function PromoModalStyles() {
@@ -437,6 +438,10 @@ function SimuladorInterno() {
    HOME PAGE (Main Interface Component)
    ========================================================================== */
 export default function Home() {
+  // Apaga temporalmente el CTA de descuento (modal al abrir la landing).
+  // Para volver a activarlo, cambia esto a true.
+  const SHOW_PROMO_MODAL = false;
+
   useEffect(() => {
     if (window.location.search.length > 0) {
       window.history.replaceState({}, document.title, window.location.origin);
@@ -462,11 +467,12 @@ export default function Home() {
       <Script src="https://sdk.mercadopago.com/js/v2" strategy="lazyOnload" />
       
       <ScrollMarquee />
-      <PromoModal />
+      {SHOW_PROMO_MODAL && <PromoModal />}
 
       <section id="simulador-section" className="relative min-h-[90vh] flex flex-col items-center justify-center px-6 overflow-hidden">
         <div className="absolute top-0 left-0 right-0 h-[90vh] bg-cover bg-center" style={{ backgroundImage: "url('/disenos/fondo-hero.jpg')" }} />
         <div className="absolute top-0 left-0 right-0 h-[90vh] bg-black/70" />
+        <FloatingTeamTags className="z-20" />
         <div className="relative z-10 text-center w-full max-w-4xl">
           <img src="/disenos/logo-strafalaria-white.svg" className="w-40 mx-auto mt-8 mb-6" alt="Strafalaria Logo" />
           <p className="text-[22px] md:text-[30px] uppercase tracking-[0.15em] text-white font-black mb-6 leading-snug">
