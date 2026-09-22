@@ -142,6 +142,17 @@
   gap: 10px;
 }
 
+.postersRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.postersRow .frame {
+  aspect-ratio: 4 / 5;
+}
+
 .frame {
   margin: 0;
   border: 1px solid var(--line);

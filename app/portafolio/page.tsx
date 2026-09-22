@@ -25,6 +25,14 @@ const unitipsPiezas = [
   { src: "/portafolio/unitips-05.png", alt: "Pieza gráfica Unitips 05" },
 ];
 
+// Nueva retícula — 4 posters informativos (formato tipo "Fechas de convocatoria"), en una sola fila de 4 columnas
+const unitipsPosters = [
+  { src: "/portafolio/unitips-convocatorias-01.png", alt: "Unitips — poster informativo 01" },
+  { src: "/portafolio/unitips-convocatorias-02.png", alt: "Unitips — poster informativo 02" },
+  { src: "/portafolio/unitips-convocatorias-03.png", alt: "Unitips — poster informativo 03" },
+  { src: "/portafolio/unitips-convocatorias-04.png", alt: "Unitips — poster informativo 04" },
+];
+
 // Sub-bloque dentro de Hoja 01 — Ads Unitips Chile
 // Cambia estas rutas por tus imágenes reales y el texto de "caption".
 const adsUnitipsChile = {
@@ -130,6 +138,16 @@ export default function PortafolioPage() {
           </p>
           <div className={styles.gridCompact}>
             {unitipsPiezas.map((pieza) => (
+              <figure key={pieza.src} className={styles.frame}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={pieza.src} alt={pieza.alt} className={styles.frameImg} />
+              </figure>
+            ))}
+          </div>
+
+          {/* Retícula — 4 posters informativos, alineados en una sola fila / 4 columnas */}
+          <div className={styles.postersRow}>
+            {unitipsPosters.map((pieza) => (
               <figure key={pieza.src} className={styles.frame}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={pieza.src} alt={pieza.alt} className={styles.frameImg} />
