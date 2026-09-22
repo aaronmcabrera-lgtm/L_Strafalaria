@@ -1,0 +1,385 @@
+.page {
+  --bg: #f1ede3;
+  --ink: #211f1a;
+  --ink-dim: #6b6558;
+  --orange: #d97e46;
+  --purple: #9084bd;
+  --orange-soft: rgba(217, 126, 70, 0.18);
+  --purple-soft: rgba(144, 132, 189, 0.18);
+  --line: rgba(33, 31, 26, 0.12);
+  --pad-x: clamp(16px, 4vw, 32px);
+  --pad-top: clamp(24px, 5vw, 64px);
+
+  position: relative;
+  background: var(--bg);
+  background-image: radial-gradient(var(--line) 1px, transparent 1px);
+  background-size: 22px 22px;
+  color: var(--ink);
+  min-height: 100vh;
+  padding: var(--pad-top) var(--pad-x);
+  font-family: var(--font-display), Georgia, serif;
+  overflow: hidden;
+}
+
+/* ---------- Encabezado (portada real del reel) ---------- */
+.headerBanner {
+  position: relative;
+  width: auto;
+  margin: calc(-1 * var(--pad-top)) calc(-1 * var(--pad-x)) 0;
+  overflow: hidden;
+}
+
+.headerImg {
+  width: 100%;
+  height: clamp(70px, 14vw, 160px);
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+}
+
+.sheetBorder {
+  position: relative;
+  z-index: 1;
+  max-width: 880px;
+  margin: 0 auto;
+}
+
+/* Decorative scatter — stars, diamonds, orbit lines, echoing the title card */
+.scatter {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ---------- Hero ---------- */
+.hero {
+  position: relative;
+  text-align: center;
+  padding: clamp(40px, 8vw, 88px) 16px clamp(48px, 8vw, 80px);
+  margin-bottom: clamp(32px, 5vw, 48px);
+}
+
+.eyebrow {
+  font-family: var(--font-display), serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 14px;
+  color: var(--ink-dim);
+  margin: 0 0 18px;
+  letter-spacing: 0.02em;
+}
+
+.name {
+  font-size: clamp(36px, 6vw, 56px);
+  font-weight: 600;
+  margin: 0 0 14px;
+  line-height: 1.05;
+}
+
+.role {
+  font-family: var(--font-display), serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(18px, 2.4vw, 22px);
+  color: var(--ink);
+  margin: 0 0 22px;
+}
+
+.intro {
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--ink-dim);
+  max-width: 46ch;
+  margin: 0 auto;
+}
+
+/* ---------- Sheets ---------- */
+.sheet {
+  margin-bottom: clamp(40px, 6vw, 64px);
+}
+
+.sheetHead {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.sheetLabel {
+  font-family: var(--font-display), serif;
+  font-style: italic;
+  font-size: 14px;
+  color: var(--orange);
+}
+
+.sheetTitle {
+  font-size: clamp(20px, 3vw, 24px);
+  font-weight: 500;
+  margin: 0;
+}
+
+.sheetCopy {
+  color: var(--ink-dim);
+  line-height: 1.6;
+  max-width: 60ch;
+  margin: 0 0 24px;
+  font-family: system-ui, sans-serif;
+  font-size: 15px;
+}
+
+/* ---------- Image grid (Unitips) ---------- */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 14px;
+}
+
+.gridCompact {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+  gap: 10px;
+}
+
+.frame {
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  overflow: hidden;
+  background: rgba(33, 31, 26, 0.05);
+  aspect-ratio: 9 / 16;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.frameImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* ---------- Mosaico editorial (Strafalaria — Diseño y Producción) ------- */
+
+/* Grupo superior: Ejemplo 1 | divisor vertical | Ejemplo 2 */
+.mosaicTop {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 36px;
+  align-items: start;
+}
+
+.mosaicVDivider {
+  width: 1px;
+  align-self: stretch;
+  background: var(--line);
+}
+
+.mosaicHDivider {
+  height: 1px;
+  background: var(--line);
+  margin: 44px 0 40px;
+}
+
+.mosaicCaption {
+  font-family: system-ui, sans-serif;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--ink-dim);
+  max-width: 30ch;
+  margin: 0;
+}
+
+/* Ejemplo 1 — imagen grande a la izquierda, chica + caption a la derecha */
+/* Ejemplo 1 — imagen grande a la izquierda (altura completa);       */
+/* imagen chica + caption apiladas a la derecha (imagen arriba, texto abajo) */
+.mosaicA {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  grid-template-rows: auto auto;
+  gap: 12px;
+}
+
+.mosaicA .imgBig {
+  grid-row: 1 / 3;
+}
+
+.mosaicA .imgBig .frame {
+  height: 100%;
+  aspect-ratio: auto;
+}
+
+.mosaicA .imgSmall .frame {
+  aspect-ratio: 3 / 4;
+}
+
+/* Ejemplo 2 — composición espejada del Ejemplo 1:                    */
+/* caption + imagen chica apiladas a la izquierda (texto arriba, imagen abajo); */
+/* imagen grande a la derecha (altura completa)                        */
+.mosaicB {
+  display: grid;
+  grid-template-columns: 1fr 1.15fr;
+  grid-template-rows: auto auto;
+  gap: 12px;
+}
+
+.mosaicB .imgBig {
+  grid-column: 2;
+  grid-row: 1 / 3;
+}
+
+.mosaicB .imgBig .frame {
+  height: 100%;
+  aspect-ratio: auto;
+}
+
+.mosaicB .imgSmall {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.mosaicB .imgSmall .frame {
+  aspect-ratio: 3 / 4;
+}
+
+.mosaicB .caption {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+/* Ejemplo 3 — caption centrado + fila de 3 imágenes cuadradas, banner ancho debajo */
+.mosaicC {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.mosaicC .top {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+}
+
+.mosaicC .caption {
+  flex: 0 0 clamp(120px, 18%, 170px);
+}
+
+.mosaicC .row3 {
+  display: flex;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.mosaicC .row3 .frame {
+  flex: 0 0 clamp(84px, 12vw, 130px);
+  aspect-ratio: 1 / 1;
+}
+
+.mosaicC .banner .frame {
+  aspect-ratio: 7 / 2;
+  background: rgba(33, 31, 26, 0.03);
+  border-color: rgba(33, 31, 26, 0.08);
+}
+
+@media (max-width: 640px) {
+  .mosaicTop {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  .mosaicVDivider {
+    display: none;
+  }
+  .mosaicC .top {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .mosaicC .caption {
+    flex-basis: auto;
+  }
+}
+
+/* ---------- Timeline divider (nod to the AE timeline on the title card) --- */
+.timeline {
+  position: relative;
+  height: 34px;
+  margin: 0 0 clamp(40px, 6vw, 64px);
+  display: flex;
+  align-items: center;
+}
+
+.timelineTrack {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: var(--line);
+}
+
+.timelinePlayhead {
+  position: absolute;
+  left: 42%;
+  top: -6px;
+  bottom: -6px;
+  width: 1px;
+  background: var(--ink-dim);
+}
+
+.timelineBar {
+  position: relative;
+  height: 6px;
+  border-radius: 3px;
+}
+
+.timelineBarOrange {
+  composes: timelineBar;
+  background: var(--orange-soft);
+  border: 1px solid var(--orange);
+}
+
+.timelineBarPurple {
+  composes: timelineBar;
+  background: var(--purple-soft);
+  border: 1px solid var(--purple);
+}
+
+/* ---------- Footer ---------- */
+.footer {
+  border-top: 1px solid var(--line);
+  padding-top: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+}
+
+.footerLine {
+  font-family: var(--font-display), serif;
+  font-style: italic;
+  font-size: 14px;
+  color: var(--ink-dim);
+  margin: 0;
+}
+
+.link {
+  color: var(--orange);
+  text-decoration: none;
+  border-bottom: 1px solid var(--orange-soft);
+}
+
+.link:hover,
+.link:focus-visible {
+  border-bottom-color: var(--orange);
+}
+
+.link:focus-visible {
+  outline: 2px solid var(--orange);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :global(*) {
+    transition: none !important;
+  }
+}
