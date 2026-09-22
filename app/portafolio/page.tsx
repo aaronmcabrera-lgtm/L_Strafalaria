@@ -25,6 +25,16 @@ const unitipsPiezas = [
   { src: "/portafolio/unitips-05.png", alt: "Pieza gráfica Unitips 05" },
 ];
 
+// Sub-bloque dentro de Hoja 01 — Ads Unitips Chile
+// Cambia estas rutas por tus imágenes reales y el texto de "caption".
+const adsUnitipsChile = {
+  vertical: "/portafolio/unitips-chile-ads-01.png",
+  squareA: "/portafolio/unitips-chile-ads-02.png",
+  squareB: "/portafolio/unitips-chile-ads-03.png",
+  caption:
+    "Piezas gráficas diseñadas para campaña de anuncios en Meta, mercado Chile, promoviendo el curso Preuniversitario. Composición vectorial e identidad gráfica adaptadas a formato feed y story para conversión digital.",
+};
+
 // Nueva sección — Ads de Strafalaria para campaña de Marketing Digital
 // Cambia estas rutas por tus imágenes reales una vez que las tengas en /public/portafolio/
 const adsStrafalaria = [
@@ -39,21 +49,32 @@ const adsStrafalaria = [
 const mosaicoEjemplo1 = {
   imgBig: "/portafolio/strafalaria-mosaico-01-big.png",
   imgSmall: "/portafolio/strafalaria-mosaico-01-small.png",
-  caption: "Aquí va la descripción de este ejemplo de diseño gráfico.",
+  captionTitle: "Desarrollo del dije Águilas Blancas:",
+  captionBody:
+    "ilustración conceptual y hoja técnica con detalle de proporciones y acabados, apoyadas con IA generativa (",
+  captionIA: "Claude, ChatGPT",
+  captionEnd: ").",
 };
 
 const mosaicoEjemplo2 = {
   imgShort: "/portafolio/strafalaria-mosaico-02-a.png",
   imgTall: "/portafolio/strafalaria-mosaico-02-b.png",
-  caption: "Aquí va la descripción de este ejemplo de diseño gráfico.",
+  captionTitle: "Proceso de diseño para el cliente TWO4 —",
+  captionBody:
+    "del boceto a mano al render final, ambos apoyados con IA generativa (",
+  captionIA: "Claude, ChatGPT",
+  captionEnd: ").",
 };
 
 const mosaicoEjemplo3 = {
   imgA: "/portafolio/strafalaria-mosaico-03-a.png",
   imgB: "/portafolio/strafalaria-mosaico-03-b.png",
-  imgC: "/portafolio/strafalaria-mosaico-03-c.png",
   banner: "/portafolio/strafalaria-mosaico-03-banner.png",
-  caption: "Aquí va la descripción de este ejemplo de diseño gráfico.",
+  captionTitle: "Banners comerciales para Strafalaria:",
+  captionBody:
+    "diseñados para impulsar la venta a través del simulador en la landing page. Hechos en Photoshop siguiendo la identidad visual de la marca, apoyados también en IA generativa (",
+  captionIA: "Claude, ChatGPT",
+  captionEnd: ").",
 };
 // ------------------------------------------------------------------------
 
@@ -87,7 +108,6 @@ export default function PortafolioPage() {
             <path d="M560 60 Q 700 130 840 110" fill="none" stroke="#d97e46" strokeWidth="1" opacity="0.6" />
             <circle cx="840" cy="110" r="3.5" fill="#d97e46" opacity="0.85" />
           </svg>
-          <p className={styles.eyebrow}>Cuaderno de trabajo</p>
           <h1 className={styles.name}>Aarón Cabrera</h1>
           <p className={styles.role}>Graphic &amp; Motion Designer</p>
           <p className={styles.intro}>
@@ -116,6 +136,46 @@ export default function PortafolioPage() {
               </figure>
             ))}
           </div>
+
+          {/* Sub-bloque — Ads Unitips Chile: vertical + 2 cuadradas, alineadas a la izquierda */}
+          <div className={styles.adsUnitipsBlock}>
+            <h3 className={styles.adsUnitipsTitle}>
+              Unitips Chile - Diseño de Ads para campaña de Marketing Digital
+            </h3>
+            <div className={styles.adsUnitipsRow}>
+              <div className={styles.adsVertical}>
+                <figure className={styles.frame}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={adsUnitipsChile.vertical}
+                    alt="Ads Unitips Chile — imagen vertical"
+                    className={styles.frameImg}
+                  />
+                </figure>
+              </div>
+              <div className={styles.adsSquare}>
+                <figure className={styles.frame}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={adsUnitipsChile.squareA}
+                    alt="Ads Unitips Chile — imagen cuadrada"
+                    className={styles.frameImg}
+                  />
+                </figure>
+              </div>
+              <div className={styles.adsSquare}>
+                <figure className={styles.frame}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={adsUnitipsChile.squareB}
+                    alt="Ads Unitips Chile — imagen cuadrada"
+                    className={styles.frameImg}
+                  />
+                </figure>
+              </div>
+            </div>
+            <p className={styles.mosaicCaption}>{adsUnitipsChile.caption}</p>
+          </div>
         </section>
 
         {/* Separador — nod a la línea de tiempo de edición */}
@@ -133,7 +193,6 @@ export default function PortafolioPage() {
         {/* HOJA 02 — STRAFALARIA */}
         <section className={styles.sheet} aria-labelledby="hoja-02">
           <div className={styles.sheetHead}>
-            <span className={styles.sheetLabel}>Hoja 02</span>
             <h2 id="hoja-02" className={styles.sheetTitle}>
               Strafalaria — Diseño y Producción
             </h2>
@@ -167,7 +226,12 @@ export default function PortafolioPage() {
                 </figure>
               </div>
               <div className={styles.caption}>
-                <p className={styles.mosaicCaption}>{mosaicoEjemplo1.caption}</p>
+                <p className={styles.mosaicCaption}>
+                  <strong>{mosaicoEjemplo1.captionTitle}</strong>{" "}
+                  {mosaicoEjemplo1.captionBody}
+                  <strong>{mosaicoEjemplo1.captionIA}</strong>
+                  {mosaicoEjemplo1.captionEnd}
+                </p>
               </div>
             </div>
 
@@ -177,7 +241,12 @@ export default function PortafolioPage() {
             {/* caption + imagen chica a la izquierda, imagen grande a la derecha */}
             <div className={styles.mosaicB}>
               <div className={styles.caption}>
-                <p className={styles.mosaicCaption}>{mosaicoEjemplo2.caption}</p>
+                <p className={styles.mosaicCaption}>
+                  <strong>{mosaicoEjemplo2.captionTitle}</strong>{" "}
+                  {mosaicoEjemplo2.captionBody}
+                  <strong>{mosaicoEjemplo2.captionIA}</strong>
+                  {mosaicoEjemplo2.captionEnd}
+                </p>
               </div>
               <div className={styles.imgSmall}>
                 <figure className={styles.frame}>
@@ -207,7 +276,12 @@ export default function PortafolioPage() {
           {/* Ejemplo 3 — caption + fila de 3 imágenes, banner ancho debajo */}
           <div className={styles.mosaicC}>
             <div className={styles.top}>
-              <p className={styles.mosaicCaption}>{mosaicoEjemplo3.caption}</p>
+              <p className={styles.mosaicCaption}>
+                <strong>{mosaicoEjemplo3.captionTitle}</strong>{" "}
+                {mosaicoEjemplo3.captionBody}
+                <strong>{mosaicoEjemplo3.captionIA}</strong>
+                {mosaicoEjemplo3.captionEnd}
+              </p>
               <div className={styles.row3}>
                 <figure className={styles.frame}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -221,14 +295,6 @@ export default function PortafolioPage() {
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={mosaicoEjemplo3.imgB}
-                    alt="Strafalaria — ejemplo de diseño gráfico"
-                    className={styles.frameImg}
-                  />
-                </figure>
-                <figure className={styles.frame}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={mosaicoEjemplo3.imgC}
                     alt="Strafalaria — ejemplo de diseño gráfico"
                     className={styles.frameImg}
                   />
@@ -270,8 +336,8 @@ export default function PortafolioPage() {
           </div>
           <p className={styles.sheetCopy}>
             Piezas creativas diseñadas para la campaña de pauta digital de la
-            marca: artes multiformato pensados para conversión, pensados para
-            Meta Ads y puntos de contacto de venta directa.
+            marca: artes multiformato pensados para conversión, para Meta Ads
+            y puntos de contacto de venta directa.
           </p>
           <div className={styles.gridCompact}>
             {adsStrafalaria.map((pieza) => (
@@ -286,8 +352,23 @@ export default function PortafolioPage() {
         {/* CONTACTO */}
         <footer className={styles.footer}>
           <p className={styles.footerLine}>
-            Reel completo:{" "}
-            <a href="https://vimeo.com/1228611309" className={styles.link}>
+            DEMO REEL{" "}
+            <a
+              href="https://vimeo.com/1228611309"
+              className={styles.link}
+              aria-label="Ver demo reel en Vimeo"
+            >
+              <svg
+                className={styles.vimeoIcon}
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+                focusable="false"
+              >
+                <path
+                  fill="currentColor"
+                  d="M22.396 7.164c-.1 2.187-1.626 5.183-4.578 8.99-3.052 3.973-5.636 5.96-7.752 5.96-1.312 0-2.42-1.211-3.327-3.634-.605-2.223-1.21-4.447-1.814-6.67-.673-2.422-1.393-3.634-2.16-3.634-.167 0-.75.35-1.751 1.05l-1.014-1.31c1.104-.972 2.192-1.944 3.264-2.917 1.474-1.276 2.58-1.947 3.318-2.014 1.744-.168 2.818.983 3.223 3.454.437 2.66.74 4.315.909 4.964.505 2.302 1.06 3.452 1.665 3.452.47 0 1.176-.745 2.117-2.236.939-1.49 1.442-2.625 1.51-3.406.135-1.286-.372-1.93-1.51-1.93-.538 0-1.092.123-1.66.367 1.102-3.613 3.206-5.37 6.313-5.27 2.302.068 3.387 1.558 3.253 4.47z"
+                />
+              </svg>
               vimeo.com/1228611309
             </a>
           </p>

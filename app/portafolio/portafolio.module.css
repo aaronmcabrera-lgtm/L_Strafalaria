@@ -56,8 +56,8 @@
 .hero {
   position: relative;
   text-align: center;
-  padding: clamp(40px, 8vw, 88px) 16px clamp(48px, 8vw, 80px);
-  margin-bottom: clamp(32px, 5vw, 48px);
+  padding: clamp(16px, 4vw, 40px) 16px clamp(20px, 4vw, 36px);
+  margin-bottom: clamp(12px, 2vw, 20px);
 }
 
 .eyebrow {
@@ -71,7 +71,7 @@
 }
 
 .name {
-  font-size: clamp(36px, 6vw, 56px);
+  font-size: clamp(25px, 4.2vw, 39px);
   font-weight: 600;
   margin: 0 0 14px;
   line-height: 1.05;
@@ -161,6 +161,49 @@
   display: block;
 }
 
+/* ---------- Sub-bloque: Ads Unitips Chile (dentro de Hoja 01) ---------- */
+.adsUnitipsBlock {
+  margin-top: 32px;
+  padding-top: 28px;
+  border-top: 1px solid var(--line);
+}
+
+.adsUnitipsTitle {
+  font-family: var(--font-display), serif;
+  font-style: normal;
+  font-weight: 500;
+  font-size: clamp(20px, 3vw, 24px);
+  color: var(--ink);
+  margin: 0 0 16px;
+}
+
+.adsUnitipsRow {
+  display: flex;
+  justify-content: flex-start;
+  gap: 12px;
+}
+
+.adsVertical {
+  flex: 0 0 clamp(117px, 18vw, 169px);
+}
+
+.adsVertical .frame {
+  aspect-ratio: 9 / 16;
+}
+
+.adsSquare {
+  flex: 0 0 clamp(117px, 18vw, 169px);
+}
+
+.adsSquare .frame {
+  aspect-ratio: 1 / 1;
+}
+
+.adsUnitipsBlock .mosaicCaption {
+  margin-top: 16px;
+  max-width: 100%;
+}
+
 /* ---------- Mosaico editorial (Strafalaria — Diseño y Producción) ------- */
 
 /* Grupo superior: Ejemplo 1 | divisor vertical | Ejemplo 2 */
@@ -190,6 +233,11 @@
   color: var(--ink-dim);
   max-width: 30ch;
   margin: 0;
+}
+
+.mosaicCaption strong {
+  font-weight: 700;
+  color: var(--ink);
 }
 
 /* Ejemplo 1 — imagen grande a la izquierda, chica + caption a la derecha */
@@ -274,7 +322,7 @@
 
 .mosaicC .row3 .frame {
   flex: 0 0 clamp(84px, 12vw, 130px);
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 3 / 4;
 }
 
 .mosaicC .banner .frame {
@@ -355,17 +403,27 @@
 }
 
 .footerLine {
-  font-family: var(--font-display), serif;
-  font-style: italic;
+  font-family: system-ui, sans-serif;
+  font-style: normal;
+  font-weight: 600;
   font-size: 14px;
-  color: var(--ink-dim);
+  color: var(--ink);
   margin: 0;
 }
 
 .link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   color: var(--orange);
   text-decoration: none;
   border-bottom: 1px solid var(--orange-soft);
+}
+
+.vimeoIcon {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 auto;
 }
 
 .link:hover,
